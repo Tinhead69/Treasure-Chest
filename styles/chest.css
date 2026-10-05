@@ -1,0 +1,272 @@
+@layer treasure-chest {
+  .treasure-chest-choice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .treasure-chest-choice-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .treasure-chest-choice img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+  }
+
+  .treasure-chest-choice-text {
+    font-weight: 600;
+  }
+
+  .treasure-chest-create {
+    flex: 0 0 auto;
+  }
+
+  .treasure-chest-sheet {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 100%;
+  }
+
+  .treasure-chest-sheet .chest-header {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .treasure-chest-sheet .portrait-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .treasure-chest-sheet .profile-img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+  }
+
+  .treasure-chest-sheet .header-fields {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .treasure-chest-sheet .header-fields input[name="name"] {
+    width: 100%;
+    font-size: var(--font-size-20);
+    font-weight: 600;
+  }
+
+  .treasure-chest-sheet .hint,
+  .treasure-chest-sheet .empty-hint,
+  .treasure-chest-browser .browser-count {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-12);
+  }
+
+  .treasure-chest-sheet .combat-warning {
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-level-warning, var(--color-warm-2));
+    background: var(--color-bg-tertiary);
+  }
+
+  .treasure-chest-sheet .currency-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .treasure-chest-sheet .denom {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .treasure-chest-sheet .denom-label {
+    font-size: var(--font-size-12);
+    font-weight: 600;
+  }
+
+  .treasure-chest-sheet .denom-controls {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .treasure-chest-sheet .denom input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .treasure-chest-sheet .security {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+  }
+
+  .treasure-chest-sheet .security h3,
+  .treasure-chest-sheet .security-checks,
+  .treasure-chest-sheet .security-grid {
+    margin: 0;
+  }
+
+  .treasure-chest-sheet .security-checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .treasure-chest-sheet .security-checks label,
+  .treasure-chest-sheet .security-grid label,
+  .treasure-chest-sheet .security > label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .treasure-chest-sheet .security-checks label {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .treasure-chest-sheet .security-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .treasure-chest-sheet .destination {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    max-width: 280px;
+  }
+
+  .treasure-chest-sheet .item-row[draggable="true"] {
+    cursor: grab;
+  }
+
+  .treasure-chest-place {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+  }
+
+  .treasure-chest-place select {
+    width: 100%;
+  }
+
+  .treasure-chest-sheet .destination label,
+  .treasure-chest-browser .browser-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .treasure-chest-sheet .chest-toolbar,
+  .treasure-chest-browser .browser-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .treasure-chest-sheet .chest-drop-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 160px;
+    padding: 0.5rem;
+    border: 1px dashed var(--color-border);
+    border-radius: var(--border-radius);
+  }
+
+  .treasure-chest-sheet .chest-drop-zone.drag-over {
+    border-color: var(--color-warm-2);
+    background: var(--color-bg-tertiary);
+  }
+
+  .treasure-chest-sheet .chest-section h3 {
+    margin: 0 0 0.35rem;
+    font-size: var(--font-size-14);
+  }
+
+  .treasure-chest-sheet .item-list,
+  .treasure-chest-browser .browser-results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .treasure-chest-sheet .item-row,
+  .treasure-chest-browser .browser-results li label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+  }
+
+  .treasure-chest-sheet .item-row img,
+  .treasure-chest-browser .browser-results img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    flex: 0 0 auto;
+  }
+
+  .treasure-chest-sheet .item-name,
+  .treasure-chest-browser .browser-results span {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .treasure-chest-sheet .item-rarity,
+  .treasure-chest-sheet .item-qty {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-12);
+  }
+
+  .treasure-chest-browser .browser-toolbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .treasure-chest-browser .browser-results {
+    max-height: 360px;
+    overflow: auto;
+  }
+
+  .treasure-chest-browser .browser-results li[hidden] {
+    display: none;
+  }
+
+  .chat-message .treasure-chest-request {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .chat-message .treasure-chest-request p {
+    margin: 0;
+  }
+
+  .chat-message .treasure-chest-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
