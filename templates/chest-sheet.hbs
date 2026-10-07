@@ -1,21 +1,36 @@
 <div class="treasure-chest-sheet">
-  <header class="chest-header">
-    {{#if editable}}
-    <button type="button" class="portrait-button" data-action="editImage">
-      <img class="profile-img" src="{{portrait}}" alt="">
-    </button>
-    {{else}}
+  <header class="sheet-header">
+  {{#if editable}}
+  <button type="button" class="portrait-button" data-action="editImage">
     <img class="profile-img" src="{{portrait}}" alt="">
-    {{/if}}
-    <div class="header-fields">
+  </button>
+  {{else}}
+  <img class="profile-img" src="{{portrait}}" alt="">
+  {{/if}}
+  <div class="header-main">
+    <div class="name-row">
       {{#if editable}}
-      <input type="text" name="name" value="{{chestName}}">
+      <input class="document-name" type="text" name="name" value="{{chestName}}" spellcheck="false" autocomplete="off">
       {{else}}
-      <h2>{{chestName}}</h2>
+      <h2 class="document-name">{{chestName}}</h2>
       {{/if}}
-      <p class="hint">{{hint}}</p>
+      <div class="type-badge">
+        <i class="fa-solid fa-box-open"></i>
+        <span>{{localize "TREASURE_CHEST.Create.Type"}}</span>
+      </div>
     </div>
-  </header>
+    <div class="summary-bar">
+      <div>
+        <span>{{localize "TREASURE_CHEST.Sheet.TotalItems"}}</span>
+        <strong>{{totals.count}}</strong>
+      </div>
+      <div>
+        <span>{{localize "TREASURE_CHEST.Sheet.TotalQty"}}</span>
+        <strong>{{totals.quantity}}</strong>
+      </div>
+    </div>
+  </div>
+</header>
 
   {{#if lootingBlocked}}
   <p class="combat-warning">{{localize "TREASURE_CHEST.Sheet.Combat"}}</p>
@@ -168,29 +183,19 @@
   </section>
   {{/if}}
 
-  <section>
-    <h3>{{localize "TREASURE_CHEST.Sheet.Coins"}}</h3>
-    <div class="currency-grid">
-      {{#each denominations}}
-      <label class="denom">
-        <span class="denom-label">{{label}}</span>
-        <span class="denom-controls">
-          <input type="number" name="currency.{{key}}" value="{{value}}" min="0" step="1" {{#unless ../editable}}disabled{{/unless}}>
-          <button type="button" data-action="takeDenom" data-denom="{{key}}" title="{{takeLabel}}" {{#unless ../canTake}}disabled{{/unless}}>
-            <i class="fas fa-hand-paper"></i>
-          </button>
-        </span>
-      </label>
-      {{/each}}
-    </div>
+  <section class="currency-row">
+    {{#each denominations}}
+    <label class="denom">
+      {{#if icon}}<img src="{{icon}}" alt="{{label}}">{{else}}<span class="denom-label">{{label}}</span>{{/if}}
+      <input type="number" name="currency.{{key}}" value="{{value}}" min="0" step="1" {{#unless ../editable}}disabled{{/unless}}>
+      <button type="button" data-action="takeDenom" data-denom="{{key}}" title="{{takeLabel}}" {{#unless ../canTake}}disabled{{/unless}}>
+        <i class="fas fa-hand-paper"></i>
+      </button>
+    </label>
+    {{/each}}
   </section>
 
   <div class="chest-toolbar">
-    {{#if editable}}
-    <button type="button" data-action="browse">
-      <i class="fas fa-book-open"></i> {{localize "TREASURE_CHEST.Actions.Browse"}}
-    </button>
-    {{/if}}
     <button type="button" data-action="takeCoins" {{#unless canTake}}disabled{{/unless}}>
       {{localize "TREASURE_CHEST.Actions.TakeCoins"}}
     </button>
@@ -230,6 +235,9 @@
     <p class="empty-hint">{{localize "TREASURE_CHEST.Sheet.DragHint"}}</p>
     {{#if editable}}
     <p class="empty-hint">{{localize "TREASURE_CHEST.Sheet.DropHint"}}</p>
+    <button type="button" class="add-item" data-action="browse" title="{{localize "TREASURE_CHEST.Actions.Browse"}}">
+      <i class="fa-solid fa-plus"></i>
+    </button>
     {{/if}}
   </div>
 </div>

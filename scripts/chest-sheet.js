@@ -84,8 +84,9 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   /** @override */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
+    const contents = getContents(this.document);
+    const grouped = groupContents(contents);
     const currency = getCurrency(this.document);
-    const grouped = groupContents(getContents(this.document));
     const security = getSecurity(this.document);
     const sealed = sealReason(this.document);
     const lockedShut = security.locked && !security.unlocked;
@@ -108,8 +109,12 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       ...context,
       editable: this.isEditable,
       item: this.document,
-      chestName: this.document.name,
+      chestName: this.document.name ?? "",
       portrait: chestPortrait(this.document),
+      totals: {
+        count: contents.length,
+        quantity: contents.reduce((sum, entry) => sum + (Number(entry.quantity) || 0), 0)
+      },
       hint: game.i18n.localize("TREASURE_CHEST.Sheet.Hint"),
       lootingBlocked,
       canTake,
@@ -138,6 +143,7 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       denominations: DENOMINATIONS.map((key) => ({
         key,
         label: key.toUpperCase(),
+        icon: CONFIG.DND5E?.currencies?.[key]?.icon ?? "",
         value: currency[key],
         takeLabel: game.i18n.format("TREASURE_CHEST.Actions.TakeDenom", { denom: key.toUpperCase() })
       })),
@@ -158,7 +164,11 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     super._onRender?.(context, options);
     this.#bindDropZone();
     this.#bindRowDrag();
+    const nameInput = this.element.querySelector("input.document-name");
+    if (nameInput && nameInput !== document.activeElement) nameInput.value = this.document.name ?? "";
     const portrait = chestPortrait(this.document);
+    const image = this.element.querySelector(".profile-img");
+    if (image && image.getAttribute("src") !== portrait) image.src = portrait;
     if (this.isEditable && this.document.img !== portrait) {
       void this.document.update({ img: portrait });
     }
@@ -226,7 +236,7 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     if (!sheet.isEditable) return;
     const raw = formData.object ?? {};
     const update = {};
-    if (typeof raw.name === "string") update.name = raw.name;
+    if (typeof raw.name === "string" && raw.name.trim()) update.name = raw.name.trim();
     if (raw.currency) {
       const currency = {};
       for (const key of DENOMINATIONS) currency[key] = Math.max(0, Math.floor(Number(raw.currency[key]) || 0));

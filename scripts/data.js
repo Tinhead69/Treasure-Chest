@@ -1,22 +1,29 @@
 export const MODULE_ID = "treasure-chest";
 
-export const CHEST_ICON = "modules/treasure-chest/assets/chest.svg";
-
-const MISSING_CHEST_ICONS = new Set([
+const BROKEN_CHEST_ICONS = new Set([
   "",
   "icons/svg/item-bag.svg",
   "icons/svg/mystery-man.svg",
-  "icons/containers/chest/chest-reinforced-steel-brown.webp"
+  "icons/containers/chest/chest-reinforced-steel-brown.webp",
+  "modules/treasure-chest/assets/chest.svg"
 ]);
 
 /**
- * Portrait to show for a chest. Replaces Foundry paths that do not resolve.
+ * The same artwork dnd5e uses for a loot item.
+ * @returns {string}
+ */
+export function chestArtwork() {
+  return CONFIG.DND5E?.defaultArtwork?.loot || "systems/dnd5e/icons/svg/items/loot.svg";
+}
+
+/**
+ * Portrait to show for a chest. Replaces paths that do not resolve.
  * @param {Item|null|undefined} item
  * @returns {string}
  */
 export function chestPortrait(item) {
   const img = String(item?.img ?? "");
-  return MISSING_CHEST_ICONS.has(img) ? CHEST_ICON : img;
+  return BROKEN_CHEST_ICONS.has(img) ? chestArtwork() : img;
 }
 
 export const DENOMINATIONS = ["pp", "gp", "ep", "sp", "cp"];

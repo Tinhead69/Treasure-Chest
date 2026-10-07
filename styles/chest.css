@@ -269,3 +269,144 @@
     gap: 0.5rem;
   }
 }
+
+form.treasure-chest .sheet-header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+form.treasure-chest .portrait-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+form.treasure-chest .profile-img {
+  width: 108px;
+  height: 108px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #c4a574;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.45);
+  background: #1b140e;
+}
+
+form.treasure-chest .header-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+form.treasure-chest .name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+form.treasure-chest input.document-name,
+form.treasure-chest h2.document-name {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-text-light-highlight, #f4efe4);
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+form.treasure-chest input.document-name:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+form.treasure-chest .type-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  color: var(--color-text-secondary, #c7bba8);
+  font-size: 0.7rem;
+}
+
+form.treasure-chest .type-badge i {
+  font-size: 1.1rem;
+}
+
+form.treasure-chest .summary-bar {
+  display: flex;
+  border: 1px solid rgba(196, 165, 116, 0.35);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+form.treasure-chest .summary-bar > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.4rem 0.5rem;
+}
+
+form.treasure-chest .summary-bar > div + div {
+  border-left: 1px solid rgba(196, 165, 116, 0.35);
+}
+
+form.treasure-chest .summary-bar span {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary, #c7bba8);
+}
+
+form.treasure-chest .summary-bar strong {
+  font-size: 1rem;
+}
+
+form.treasure-chest .currency-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+form.treasure-chest .currency-row .denom {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+form.treasure-chest .currency-row .denom img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+form.treasure-chest .currency-row .denom input {
+  width: 4.5rem;
+}
+
+form.treasure-chest .chest-drop-zone {
+  position: relative;
+  min-height: 220px;
+}
+
+form.treasure-chest .add-item {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 4px;
+}

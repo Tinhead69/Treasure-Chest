@@ -1,4 +1,4 @@
-import { CHEST_ICON, EMPTY_CURRENCY, MODULE_ID, defaultSecurity, isChest, isChestEmpty } from "./data.js";
+import { EMPTY_CURRENCY, MODULE_ID, chestArtwork, defaultSecurity, isChest, isChestEmpty } from "./data.js";
 import { ChestSheet } from "./chest-sheet.js";
 import { registerLootDrop } from "./loot.js";
 import { registerSceneHooks } from "./scene.js";
@@ -132,7 +132,7 @@ async function createChest({ folder = null } = {}) {
   const item = await foundry.documents.Item.implementation.create({
     name: game.i18n.localize("TREASURE_CHEST.Create.DefaultName"),
     type: "loot",
-    img: CHEST_ICON,
+    img: chestArtwork(),
     folder,
     ownership: { default: observer },
     flags: {
@@ -187,7 +187,7 @@ function injectChestChoice(app, htmlOrElement) {
     input.checked = false;
     const image = chestLabel.querySelector("img");
     if (image) {
-      image.src = CHEST_ICON;
+      image.src = chestArtwork();
       image.alt = "";
     }
     const typeName = game.i18n.localize("TREASURE_CHEST.Create.Type");

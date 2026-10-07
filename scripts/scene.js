@@ -1,4 +1,4 @@
-import { CHEST_ICON, MODULE_ID, isChest } from "./data.js";
+import { MODULE_ID, chestPortrait, isChest } from "./data.js";
 
 /**
  * @param {string} uuid
@@ -18,7 +18,7 @@ export async function removeChestTiles(uuid) {
  * @returns {Promise<void>}
  */
 export async function syncChestTileImages(item) {
-  const src = item.img || CHEST_ICON;
+  const src = chestPortrait(item);
   for (const scene of game.scenes) {
     const updates = scene.tiles
       .filter((tile) => tile.getFlag(MODULE_ID, "chestUuid") === item.uuid)
@@ -38,7 +38,7 @@ async function placeChest(canvas, item, x, y) {
   const scene = canvas.scene;
   if (!scene) return;
   const size = scene.grid?.size || 100;
-  const src = item.img || CHEST_ICON;
+  const src = chestPortrait(item);
   const existing = scene.tiles.find((tile) => tile.getFlag(MODULE_ID, "chestUuid") === item.uuid);
 
   if (existing) {

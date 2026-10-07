@@ -2,7 +2,7 @@
   "id": "treasure-chest",
   "title": "Treasure Chest",
   "description": "Lootable treasure chests for D&D 5e. Stock coins and gear, place the chest on a scene, and let characters take items outside of combat.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "url": "https://github.com/Tinhead69/Treasure-Chest",
   "manifest": "https://raw.githubusercontent.com/Tinhead69/Treasure-Chest/main/module.json",
   "download": "https://github.com/Tinhead69/Treasure-Chest/raw/main/dist/module.zip",
