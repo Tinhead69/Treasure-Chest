@@ -29,6 +29,12 @@
         <strong>{{totals.quantity}}</strong>
       </div>
     </div>
+    {{#if isGm}}
+    <label class="visibility-toggle">
+      <input type="checkbox" name="hidden" {{#if hiddenFromPlayers}}checked{{/if}}>
+      <span>{{localize "TREASURE_CHEST.Sheet.Hidden"}}</span>
+    </label>
+    {{/if}}
   </div>
 </header>
 

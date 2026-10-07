@@ -8,6 +8,8 @@ import {
   getSecurity,
   groupContents,
   isChest,
+  isChestHidden,
+  needsDefaultPortrait,
   sealReason,
   setContents
 } from "./data.js";
@@ -108,6 +110,8 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     return {
       ...context,
       editable: this.isEditable,
+      isGm: game.user.isGM,
+      hiddenFromPlayers: isChestHidden(this.document),
       item: this.document,
       chestName: this.document.name ?? "",
       portrait: chestPortrait(this.document),
@@ -168,8 +172,8 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     if (nameInput && nameInput !== document.activeElement) nameInput.value = this.document.name ?? "";
     const portrait = chestPortrait(this.document);
     const image = this.element.querySelector(".profile-img");
-    if (image && image.getAttribute("src") !== portrait) image.src = portrait;
-    if (this.isEditable && this.document.img !== portrait) {
+    if (image) image.src = portrait;
+    if (this.isEditable && needsDefaultPortrait(this.document)) {
       void this.document.update({ img: portrait });
     }
   }
@@ -237,6 +241,8 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     const raw = formData.object ?? {};
     const update = {};
     if (typeof raw.name === "string" && raw.name.trim()) update.name = raw.name.trim();
+    const hiddenInput = form.querySelector('[name="hidden"]');
+    if (hiddenInput) update[`flags.${MODULE_ID}.hidden`] = hiddenInput.checked;
     if (raw.currency) {
       const currency = {};
       for (const key of DENOMINATIONS) currency[key] = Math.max(0, Math.floor(Number(raw.currency[key]) || 0));
@@ -257,7 +263,12 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     new Picker({
       type: "image",
       current: sheet.document.img,
-      callback: (path) => sheet.document.update({ img: path })
+      callback: async (path) => {
+        if (!path || path === sheet.document.img) return;
+        await sheet.document.update({ img: path });
+        const image = sheet.element?.querySelector(".profile-img");
+        if (image) image.src = path;
+      }
     }).render(true);
   }
 

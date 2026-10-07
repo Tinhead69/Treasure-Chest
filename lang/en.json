@@ -22,6 +22,7 @@
       "Coins": "Coins",
       "TotalItems": "Total items",
       "TotalQty": "Total qty",
+      "Hidden": "Hidden from the party",
       "Contents": "Contents",
       "DropHint": "Drag gear here from the Items sidebar or a compendium.",
       "Destination": "Give loot to",

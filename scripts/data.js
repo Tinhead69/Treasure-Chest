@@ -26,6 +26,14 @@ export function chestPortrait(item) {
   return BROKEN_CHEST_ICONS.has(img) ? chestArtwork() : img;
 }
 
+/**
+ * @param {Item|null|undefined} item
+ * @returns {boolean}
+ */
+export function needsDefaultPortrait(item) {
+  return BROKEN_CHEST_ICONS.has(String(item?.img ?? ""));
+}
+
 export const DENOMINATIONS = ["pp", "gp", "ep", "sp", "cp"];
 
 export const GEAR_TYPES = new Set([
@@ -59,6 +67,11 @@ export function asCoins(value) {
  */
 export function isChest(item) {
   return item?.getFlag?.(MODULE_ID, "isChest") === true;
+}
+
+/** Players do not see a hidden chest token on the map. */
+export function isChestHidden(item) {
+  return item?.getFlag?.(MODULE_ID, "hidden") === true;
 }
 
 /**

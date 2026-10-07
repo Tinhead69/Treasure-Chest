@@ -374,6 +374,19 @@ form.treasure-chest .summary-bar strong {
   font-size: 1rem;
 }
 
+form.treasure-chest .visibility-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--color-text-secondary, #c7bba8);
+  font-size: 0.85rem;
+}
+
+form.treasure-chest .visibility-toggle input {
+  margin: 0;
+}
+
 form.treasure-chest .currency-row {
   display: flex;
   flex-wrap: wrap;
