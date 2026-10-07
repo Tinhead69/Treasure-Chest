@@ -5,7 +5,7 @@
   "version": "0.1.2",
   "url": "https://github.com/Tinhead69/Treasure-Chest",
   "manifest": "https://raw.githubusercontent.com/Tinhead69/Treasure-Chest/main/module.json",
-  "download": "https://github.com/Tinhead69/Treasure-Chest/archive/refs/heads/main.zip",
+  "download": "https://codeload.github.com/Tinhead69/Treasure-Chest/zip/refs/heads/main",
   "bugs": "https://github.com/Tinhead69/Treasure-Chest/issues",
   "readme": "https://github.com/Tinhead69/Treasure-Chest/blob/main/README.md",
   "changelog": "https://github.com/Tinhead69/Treasure-Chest/commits/main",
