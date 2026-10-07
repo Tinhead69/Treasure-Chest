@@ -166,7 +166,11 @@
       "Search": "Search items",
       "Count": "Showing {shown} of {matched}",
       "Empty": "No matching items.",
-      "Error": "Could not read that compendium."
+      "Error": "Could not read that compendium.",
+      "LoadingTitle": "Loading compendium",
+      "LoadingScan": "Checking compendiums for items. A large compendium can take a while.",
+      "LoadingPack": "Loading {name}. This compendium is taking a while.",
+      "LoadingDismiss": "OK"
     },
     "Notifications": {
       "Added": "{name} added to the chest.",

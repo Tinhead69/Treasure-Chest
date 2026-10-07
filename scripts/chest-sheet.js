@@ -65,7 +65,7 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   static PARTS = {
     body: {
       template: "modules/treasure-chest/templates/chest-sheet.hbs",
-      scrollable: [".chest-drop-zone"]
+      scrollable: [""]
     }
   };
 

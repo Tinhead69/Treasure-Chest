@@ -270,6 +270,25 @@
   }
 }
 
+form.treasure-chest.application {
+  max-height: calc(100vh - 1rem);
+}
+
+form.treasure-chest .window-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+form.treasure-chest .treasure-chest-sheet {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 form.treasure-chest .sheet-header {
   display: flex;
   gap: 1rem;

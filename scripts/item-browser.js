@@ -3,21 +3,119 @@ import { addDocumentToChest } from "./loot.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
+const SLOW_LOAD_MS = 3000;
+
+/** @type {Map<string, boolean>} */
+const gearPackCache = new Map();
+
+/** @type {{ id: string, label: string }[]|null} */
+let sourcesCache = null;
+
+let noticeGeneration = 0;
+let slowTimer = 0;
+/** @type {Application|null} */
+let slowDialog = null;
+
 /**
- * @returns {{ id: string, label: string }[]}
+ * @param {string} value
+ * @returns {string}
  */
-export function listItemSources() {
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;"
+  }[character]));
+}
+
+/**
+ * @param {string} message
+ * @returns {() => void}
+ */
+function beginSlowNotice(message) {
+  const generation = ++noticeGeneration;
+  window.clearTimeout(slowTimer);
+  slowTimer = 0;
+  closeSlowNotice();
+  slowTimer = window.setTimeout(() => {
+    if (generation !== noticeGeneration) return;
+    const DialogV2 = foundry.applications.api.DialogV2;
+    slowDialog = new DialogV2({
+      window: { title: game.i18n.localize("TREASURE_CHEST.Browser.LoadingTitle") },
+      position: { width: 440 },
+      modal: true,
+      content: `<p class="treasure-chest-loading">${escapeHtml(message)}</p>`,
+      buttons: [{
+        action: "ok",
+        label: game.i18n.localize("TREASURE_CHEST.Browser.LoadingDismiss"),
+        default: true
+      }]
+    });
+    void slowDialog.render({ force: true });
+  }, SLOW_LOAD_MS);
+  return () => {
+    if (generation !== noticeGeneration) return;
+    window.clearTimeout(slowTimer);
+    slowTimer = 0;
+    closeSlowNotice();
+  };
+}
+
+function closeSlowNotice() {
+  const dialog = slowDialog;
+  slowDialog = null;
+  if (dialog?.rendered) void dialog.close();
+}
+
+/**
+ * @param {CompendiumCollection} pack
+ * @returns {Promise<boolean>}
+ */
+async function packContainsGear(pack) {
+  if (gearPackCache.has(pack.collection)) return gearPackCache.get(pack.collection);
+  let hasGear = false;
+  try {
+    const index = await pack.getIndex({ fields: ["type"] });
+    const rows = index.contents ?? [...index];
+    let sawType = false;
+    for (const entry of rows) {
+      if (!entry.type) continue;
+      sawType = true;
+      if (GEAR_TYPES.has(entry.type)) {
+        hasGear = true;
+        break;
+      }
+    }
+    if (!hasGear && rows.length && !sawType) hasGear = true;
+  } catch (error) {
+    console.error("Treasure Chest | Could not index compendium", pack.collection, error);
+    hasGear = false;
+  }
+  gearPackCache.set(pack.collection, hasGear);
+  return hasGear;
+}
+
+/**
+ * World items, plus item compendiums that actually contain gear.
+ * @returns {Promise<{ id: string, label: string }[]>}
+ */
+export async function listItemSources() {
+  if (sourcesCache) return sourcesCache;
   const sources = [{ id: "world", label: game.i18n.localize("TREASURE_CHEST.Browser.World") }];
   const packs = [];
   for (const pack of game.packs) {
     if (pack.documentName !== "Item") continue;
+    if (!(await packContainsGear(pack))) continue;
     packs.push({
       id: pack.collection,
       label: pack.metadata?.label || pack.title || pack.collection
     });
   }
   packs.sort((a, b) => a.label.localeCompare(b.label));
-  return sources.concat(packs);
+  sourcesCache = sources.concat(packs);
+  return sourcesCache;
 }
 
 /**
@@ -87,24 +185,37 @@ export class ItemBrowserDialog extends HandlebarsApplicationMixin(ApplicationV2)
 
   /** @override */
   async _prepareContext() {
-    const sources = listItemSources().map((source) => ({
-      ...source,
-      selected: source.id === this.sourceId
-    }));
-    let entries = [];
-    this.loadError = false;
+    const pack = this.sourceId === "world" ? null : game.packs.get(this.sourceId);
+    const message = sourcesCache
+      ? game.i18n.format("TREASURE_CHEST.Browser.LoadingPack", {
+        name: pack?.metadata?.label || pack?.title || this.sourceId
+      })
+      : game.i18n.localize("TREASURE_CHEST.Browser.LoadingScan");
+    const endNotice = beginSlowNotice(message);
     try {
-      entries = await loadBrowserEntries(this.sourceId);
-    } catch (error) {
-      console.error("Treasure Chest | Item browser failed", error);
-      this.loadError = true;
+      let sources = await listItemSources();
+      if (!sources.some((source) => source.id === this.sourceId)) this.sourceId = "world";
+      sources = sources.map((source) => ({
+        ...source,
+        selected: source.id === this.sourceId
+      }));
+      let entries = [];
+      this.loadError = false;
+      try {
+        entries = await loadBrowserEntries(this.sourceId);
+      } catch (error) {
+        console.error("Treasure Chest | Item browser failed", error);
+        this.loadError = true;
+      }
+      return {
+        sources,
+        entries,
+        query: this.query,
+        loadError: this.loadError
+      };
+    } finally {
+      endNotice();
     }
-    return {
-      sources,
-      entries,
-      query: this.query,
-      loadError: this.loadError
-    };
   }
 
   /** @override */
