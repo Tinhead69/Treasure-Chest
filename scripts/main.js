@@ -19,7 +19,7 @@ Hooks.once("init", () => {
     "modules/treasure-chest/templates/item-browser.hbs"
   ]);
 
-  Items.registerSheet(MODULE_ID, ChestSheet, {
+  foundry.documents.collections.Items.registerSheet(MODULE_ID, ChestSheet, {
     types: ["loot"],
     label: "Treasure Chest",
     makeDefault: false
@@ -41,7 +41,7 @@ async function onSocketMessage(message) {
   if (handleSecuritySocket(message)) return;
   if (!game.user.isGM || message?.action !== "deleteIfEmpty" || !message.uuid) return;
   if (!game.settings.get(MODULE_ID, "deleteWhenEmpty")) return;
-  const item = await fromUuid(message.uuid);
+  const item = await foundry.utils.fromUuid(message.uuid);
   if (!item || !isChest(item) || !isChestEmpty(item)) return;
   const name = item.name;
   await item.delete();
@@ -129,7 +129,7 @@ async function createChest({ folder = null } = {}) {
 
   const ownership = foundry.CONST?.DOCUMENT_OWNERSHIP_LEVELS ?? CONST?.DOCUMENT_OWNERSHIP_LEVELS;
   const observer = ownership?.OBSERVER ?? 2;
-  const item = await Item.implementation.create({
+  const item = await foundry.documents.Item.implementation.create({
     name: game.i18n.localize("TREASURE_CHEST.Create.DefaultName"),
     type: "loot",
     img: CHEST_ICON,
@@ -179,15 +179,20 @@ function injectChestChoice(app, htmlOrElement) {
     const lootLabel = lootInput?.closest("label") ?? lootInput?.parentElement;
     if (!lootLabel) return;
 
-    const chestLabel = document.createElement("label");
-    chestLabel.className = "treasure-chest-choice";
-    chestLabel.innerHTML = `
-      <input type="radio" name="type" value="__treasure_chest__">
-      <span class="treasure-chest-choice-content">
-        <img src="${CHEST_ICON}" alt="">
-        <span class="treasure-chest-choice-text">${game.i18n.localize("TREASURE_CHEST.Create.Type")}</span>
-      </span>
-    `;
+    const chestLabel = lootLabel.cloneNode(true);
+    chestLabel.classList.add("treasure-chest-choice");
+    const input = chestLabel.querySelector('input[name="type"], input[type="radio"]');
+    if (!input) return;
+    input.value = "__treasure_chest__";
+    input.checked = false;
+    const image = chestLabel.querySelector("img");
+    if (image) {
+      image.src = CHEST_ICON;
+      image.alt = "";
+    }
+    const typeName = game.i18n.localize("TREASURE_CHEST.Create.Type");
+    const caption = [...chestLabel.querySelectorAll("span")].find((span) => !span.querySelector("img, input"));
+    if (caption) caption.textContent = typeName;
     const anchor = root.querySelector(".npc-spellbook-choice") ?? lootLabel;
     anchor.after(chestLabel);
 

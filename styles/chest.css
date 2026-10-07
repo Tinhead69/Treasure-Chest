@@ -3,18 +3,18 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-  }
-
-  .treasure-chest-choice-content {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+    width: 100%;
   }
 
   .treasure-chest-choice img {
     width: 32px;
     height: 32px;
     object-fit: contain;
+    flex: 0 0 auto;
+  }
+
+  .treasure-chest-choice input[type="radio"] {
+    margin-inline-start: auto;
   }
 
   .treasure-chest-choice-text {
@@ -147,13 +147,6 @@
     gap: 0.5rem;
   }
 
-  .treasure-chest-sheet .destination {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    max-width: 280px;
-  }
-
   .treasure-chest-sheet .item-row[draggable="true"] {
     cursor: grab;
   }
@@ -176,7 +169,6 @@
     width: 100%;
   }
 
-  .treasure-chest-sheet .destination label,
   .treasure-chest-browser .browser-toolbar {
     display: flex;
     flex-direction: column;

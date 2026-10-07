@@ -2,16 +2,16 @@
   <header class="chest-header">
     {{#if editable}}
     <button type="button" class="portrait-button" data-action="editImage">
-      <img class="profile-img" src="{{item.img}}" alt="">
+      <img class="profile-img" src="{{portrait}}" alt="">
     </button>
     {{else}}
-    <img class="profile-img" src="{{item.img}}" alt="">
+    <img class="profile-img" src="{{portrait}}" alt="">
     {{/if}}
     <div class="header-fields">
       {{#if editable}}
-      <input type="text" name="name" value="{{item.name}}">
+      <input type="text" name="name" value="{{chestName}}">
       {{else}}
-      <h2>{{item.name}}</h2>
+      <h2>{{chestName}}</h2>
       {{/if}}
       <p class="hint">{{hint}}</p>
     </div>
@@ -184,21 +184,6 @@
       {{/each}}
     </div>
   </section>
-
-  <section class="destination">
-    <label>
-      <span>{{localize "TREASURE_CHEST.Sheet.Destination"}}</span>
-      <select data-role="actor">
-        {{#each actors}}
-        <option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>
-        {{/each}}
-      </select>
-    </label>
-  </section>
-  <p class="hint">{{localize "TREASURE_CHEST.Sheet.DestinationHint"}}</p>
-  {{#unless hasDestination}}
-  <p class="hint">{{localize "TREASURE_CHEST.Sheet.NoDestination"}}</p>
-  {{/unless}}
 
   <div class="chest-toolbar">
     {{#if editable}}

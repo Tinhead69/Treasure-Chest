@@ -39,13 +39,27 @@ export function isLootBlocked(chest) {
 }
 
 /**
- * @returns {Actor[]}
+ * The character who receives loot: one selected token, otherwise the assigned character.
+ * @returns {Actor|null}
  */
-export function getDestinationActors() {
-  const types = new Set(["character", "npc", "group"]);
-  return game.actors
-    .filter((actor) => types.has(actor.type) && actor.isOwner)
-    .sort((a, b) => a.name.localeCompare(b.name));
+export function lootRecipient() {
+  const tokens = canvas?.tokens?.controlled ?? [];
+  const owned = [];
+  const seen = new Set();
+  for (const token of tokens) {
+    const actor = token.actor;
+    if (!actor?.isOwner || seen.has(actor.uuid)) continue;
+    seen.add(actor.uuid);
+    owned.push(actor);
+  }
+  if (owned.length === 1) return owned[0];
+  if (owned.length > 1) {
+    ui.notifications.warn(game.i18n.localize("TREASURE_CHEST.Notifications.OneCharacter"));
+    return null;
+  }
+  if (game.user.character) return game.user.character;
+  ui.notifications.warn(game.i18n.localize("TREASURE_CHEST.Notifications.SelectCharacter"));
+  return null;
 }
 
 /**
@@ -294,7 +308,7 @@ async function onDocumentDrop(event) {
   event.preventDefault();
   event.stopPropagation();
 
-  const chest = await fromUuid(data.chestUuid);
+  const chest = await foundry.utils.fromUuid(data.chestUuid);
   if (!chest || !isChest(chest)) {
     ui.notifications.warn(game.i18n.localize("TREASURE_CHEST.Notifications.MissingChest"));
     return;

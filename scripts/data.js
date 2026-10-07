@@ -1,6 +1,23 @@
 export const MODULE_ID = "treasure-chest";
 
-export const CHEST_ICON = "icons/containers/chest/chest-reinforced-steel-brown.webp";
+export const CHEST_ICON = "modules/treasure-chest/assets/chest.svg";
+
+const MISSING_CHEST_ICONS = new Set([
+  "",
+  "icons/svg/item-bag.svg",
+  "icons/svg/mystery-man.svg",
+  "icons/containers/chest/chest-reinforced-steel-brown.webp"
+]);
+
+/**
+ * Portrait to show for a chest. Replaces Foundry paths that do not resolve.
+ * @param {Item|null|undefined} item
+ * @returns {string}
+ */
+export function chestPortrait(item) {
+  const img = String(item?.img ?? "");
+  return MISSING_CHEST_ICONS.has(img) ? CHEST_ICON : img;
+}
 
 export const DENOMINATIONS = ["pp", "gp", "ep", "sp", "cp"];
 

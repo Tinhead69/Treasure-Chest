@@ -2,6 +2,7 @@ import {
   DENOMINATIONS,
   MODULE_ID,
   SECTION_ORDER,
+  chestPortrait,
   getContents,
   getCurrency,
   getSecurity,
@@ -13,8 +14,8 @@ import {
 import {
   addDocumentToChest,
   chooseLootPlace,
-  getDestinationActors,
   isLootBlocked,
+  lootRecipient,
   takeAll,
   takeCurrency,
   takeItem
@@ -68,7 +69,6 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
 
   constructor(options = {}) {
     super(options);
-    this.selectedActorId = null;
   }
 
   /** @override */
@@ -86,20 +86,12 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     const context = await super._prepareContext(options);
     const currency = getCurrency(this.document);
     const grouped = groupContents(getContents(this.document));
-    const actors = getDestinationActors();
-
-    if (!this.selectedActorId || !actors.some((actor) => actor.id === this.selectedActorId)) {
-      const preferred = game.user.character?.id;
-      this.selectedActorId = actors.some((actor) => actor.id === preferred) ? preferred : actors[0]?.id ?? null;
-    }
-
-    const actor = actors.find((entry) => entry.id === this.selectedActorId) ?? null;
     const security = getSecurity(this.document);
     const sealed = sealReason(this.document);
     const lockedShut = security.locked && !security.unlocked;
     const armed = security.trapped && !security.disarmed && !security.triggered;
     const lootingBlocked = isLootBlocked(this.document);
-    const canTake = Boolean(actor) && !lootingBlocked && !sealed;
+    const canTake = !lootingBlocked && !sealed;
     const showExamine = security.trapped && !security.detected;
     const sealedText = lockedShut && armed
       ? game.i18n.localize("TREASURE_CHEST.Sheet.Sealed")
@@ -115,10 +107,12 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     return {
       ...context,
       editable: this.isEditable,
+      item: this.document,
+      chestName: this.document.name,
+      portrait: chestPortrait(this.document),
       hint: game.i18n.localize("TREASURE_CHEST.Sheet.Hint"),
       lootingBlocked,
       canTake,
-      hasDestination: Boolean(actor),
       sealed: Boolean(sealed),
       sealedText,
       security: {
@@ -147,11 +141,6 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
         value: currency[key],
         takeLabel: game.i18n.format("TREASURE_CHEST.Actions.TakeDenom", { denom: key.toUpperCase() })
       })),
-      actors: actors.map((entry) => ({
-        id: entry.id,
-        name: entry.type === "character" ? entry.name : `${entry.name} (${entry.type})`,
-        selected: entry.id === this.selectedActorId
-      })),
       sections: SECTION_ORDER.map((id) => ({
         id,
         label: game.i18n.localize(SECTION_LABELS[id]),
@@ -168,8 +157,11 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   _onRender(context, options) {
     super._onRender?.(context, options);
     this.#bindDropZone();
-    this.#bindDestination();
     this.#bindRowDrag();
+    const portrait = chestPortrait(this.document);
+    if (this.isEditable && this.document.img !== portrait) {
+      void this.document.update({ img: portrait });
+    }
   }
 
   #bindDropZone() {
@@ -187,17 +179,6 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       dropZone.classList.remove("drag-over");
       await this.#handleDrop(event);
     });
-  }
-
-  #bindDestination() {
-    const actorSelect = this.element.querySelector("[data-role='actor']");
-    if (actorSelect && actorSelect.dataset.bound !== "1") {
-      actorSelect.dataset.bound = "1";
-      actorSelect.addEventListener("change", () => {
-        this.selectedActorId = actorSelect.value;
-        this.render(false);
-      });
-    }
   }
 
   #bindRowDrag() {
@@ -225,15 +206,9 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   async #handleDrop(event) {
     const data = foundry.applications.ux.TextEditor.getDragEventData(event);
     if (!data?.uuid) return;
-    const doc = await fromUuid(data.uuid);
+    const doc = await foundry.utils.fromUuid(data.uuid);
     if (!doc || doc.documentName !== "Item") return;
     await addDocumentToChest(this.document, doc);
-  }
-
-  /** @returns {Actor|null} */
-  #readActor() {
-    const actorId = this.element.querySelector("[data-role='actor']")?.value || this.selectedActorId;
-    return game.actors.get(actorId) ?? null;
   }
 
   /**
@@ -241,11 +216,8 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
    * @returns {Promise<{ actor: Actor, placeId: string }|null>}
    */
   async #chooseDestination(subject) {
-    const actor = this.#readActor();
-    if (!actor) {
-      ui.notifications.warn(game.i18n.localize("TREASURE_CHEST.Notifications.NoDestination"));
-      return null;
-    }
+    const actor = lootRecipient();
+    if (!actor) return null;
     return chooseLootPlace(actor, subject);
   }
 

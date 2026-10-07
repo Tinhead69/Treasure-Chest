@@ -378,8 +378,8 @@ export async function requestCheck(chest, step, { quiet = false, actorName = "" 
     if (!quiet) ui.notifications.info(game.i18n.localize("TREASURE_CHEST.Notifications.CheckFinished"));
     return false;
   }
-  await ChatMessage.create({
-    speaker: ChatMessage.getSpeaker({ alias: chest.name }),
+  await foundry.documents.ChatMessage.create({
+    speaker: foundry.documents.ChatMessage.getSpeaker({ alias: chest.name }),
     content: `<div class="treasure-chest-request"><p>${escapeHtml(promptFor(chest, security, step, actorName))}</p></div>`,
     flags: {
       [MODULE_ID]: {
@@ -401,7 +401,7 @@ export async function requestCheck(chest, step, { quiet = false, actorName = "" 
  * @returns {object}
  */
 function speakerFor(actor, name) {
-  if (actor) return ChatMessage.getSpeaker({ actor });
+  if (actor) return foundry.documents.ChatMessage.getSpeaker({ actor });
   return { alias: name };
 }
 
@@ -413,7 +413,7 @@ function speakerFor(actor, name) {
  * @returns {Promise<void>}
  */
 async function narrate(actor, name, key, data) {
-  await ChatMessage.create({
+  await foundry.documents.ChatMessage.create({
     speaker: speakerFor(actor, name),
     content: `<p>${escapeHtml(game.i18n.format(key, { name, ...data }))}</p>`
   });
@@ -430,7 +430,7 @@ async function announceTrap(chest, security, actor, name) {
   const trapName = game.i18n.localize(`TREASURE_CHEST.Security.Presets.${security.preset}`);
   const parts = [`<p><strong>${escapeHtml(chest.name)}</strong> — ${escapeHtml(trapName)}.</p>`];
   if (security.rider) parts.push(`<p>${escapeHtml(security.rider)}</p>`);
-  await ChatMessage.create({ speaker: speakerFor(actor, name), content: parts.join("") });
+  await foundry.documents.ChatMessage.create({ speaker: speakerFor(actor, name), content: parts.join("") });
 }
 
 /**
@@ -628,9 +628,9 @@ async function resolveCheck(payload) {
   if (!game.user.isGM) return;
   const total = Number(payload.total);
   if (!Number.isFinite(total)) return;
-  const chest = await fromUuid(payload.chestUuid);
+  const chest = await foundry.utils.fromUuid(payload.chestUuid);
   if (!chest || !isChest(chest)) return;
-  const actor = payload.actorUuid ? await fromUuid(payload.actorUuid) : null;
+  const actor = payload.actorUuid ? await foundry.utils.fromUuid(payload.actorUuid) : null;
   const name = actor?.name || payload.actorName || game.i18n.localize("TREASURE_CHEST.Security.Someone");
   if (payload.step === "examine") return commitExamine(chest, actor, name, total);
   if (payload.step === "understand") return commitUnderstand(chest, actor, name, total);
@@ -655,7 +655,7 @@ export function handleSecuritySocket(message) {
 const pendingRolls = new Set();
 
 /**
- * @param {ChatMessage} message
+ * @param {foundry.documents.ChatMessage} message
  * @param {string} step
  * @returns {Promise<void>}
  */
@@ -666,7 +666,7 @@ async function rollFromRequest(message, step) {
   if (pendingRolls.has(key)) return;
   pendingRolls.add(key);
   try {
-    const chest = await fromUuid(request.chestUuid);
+    const chest = await foundry.utils.fromUuid(request.chestUuid);
     if (!chest || !isChest(chest)) {
       ui.notifications.warn(game.i18n.localize("TREASURE_CHEST.Notifications.MissingChest"));
       return;
@@ -732,7 +732,7 @@ function refreshRequestButtons(chestUuid) {
 }
 
 /**
- * @param {ChatMessage} message
+ * @param {foundry.documents.ChatMessage} message
  * @param {HTMLElement|JQuery} html
  */
 function onRenderChatMessage(message, html) {

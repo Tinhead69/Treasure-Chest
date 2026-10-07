@@ -158,7 +158,7 @@ function onCanvasDblClick(event) {
  * @returns {Promise<void>}
  */
 async function openPlacedChest(uuid) {
-  const item = await fromUuid(uuid);
+  const item = await foundry.utils.fromUuid(uuid);
   if (!item || !isChest(item)) {
     ui.notifications.warn(game.i18n.localize("TREASURE_CHEST.Notifications.MissingChest"));
     return;

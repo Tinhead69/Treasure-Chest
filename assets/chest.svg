@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Chest">
+  <rect width="64" height="64" rx="8" fill="#2a2118"/>
+  <path d="M10 28h44v22a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V28z" fill="#8a5a2b" stroke="#3b2412" stroke-width="2"/>
+  <path d="M10 28c0-10 8-16 22-16s22 6 22 16" fill="#a56b34" stroke="#3b2412" stroke-width="2"/>
+  <path d="M10 28h44" stroke="#3b2412" stroke-width="2"/>
+  <rect x="28" y="26" width="8" height="10" rx="1" fill="#d4a017" stroke="#3b2412" stroke-width="1.5"/>
+  <rect x="30" y="29" width="4" height="4" fill="#3b2412"/>
+</svg>
