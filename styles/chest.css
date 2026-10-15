@@ -364,6 +364,7 @@ form.treasure-chest .flag:has(input:checked) {
 form.treasure-chest .field {
   display: flex;
   flex-direction: column;
+  justify-content: space-between; /* label at the top, input pinned to the bottom, so inputs line up even when a label wraps */
   gap: 0.2rem;
   margin: 0;
   color: var(--tc-muted);
@@ -582,6 +583,22 @@ form.treasure-chest .item-main {
   padding-left: 0.4rem;
 }
 
+/* Clicking the icon or name opens the details window */
+form.treasure-chest .item-main {
+  cursor: pointer;
+}
+
+form.treasure-chest .item-main:hover .item-name,
+form.treasure-chest .item-main:focus-visible .item-name {
+  color: var(--tc-gold);
+}
+
+form.treasure-chest .item-main:focus-visible {
+  outline: 1px solid var(--tc-gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 form.treasure-chest .item-main img {
   flex: 0 0 auto;
   width: 34px;
@@ -711,6 +728,182 @@ form.treasure-chest .sheet-footer .add-item {
   }
 }
 
+
+/* --------------------------------------------------------------------------
+   2b. The item details window (opened by clicking an item in the chest)
+   -------------------------------------------------------------------------- */
+.treasure-chest-details {
+  --tc-gold: #c4a574;
+  --tc-line: rgb(196 165 116 / 0.3);
+  --tc-muted: var(--color-text-secondary, #c7bba8);
+}
+
+.treasure-chest-details .item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.treasure-chest-details .item-details-header {
+  --ring: var(--tc-gold);
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.treasure-chest-details .item-details-header img {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border: 2px solid var(--ring);
+  border-radius: 6px;
+  background: rgb(0 0 0 / 0.35);
+}
+
+.treasure-chest-details .item-details-title h2 {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+.treasure-chest-details .item-details-title p {
+  margin: 0.15rem 0 0;
+  color: var(--tc-muted);
+  font-size: 0.85rem;
+}
+
+.treasure-chest-details .item-details-header[data-rarity="uncommon" i] { --ring: #5cc24a; }
+.treasure-chest-details .item-details-header[data-rarity="rare" i] { --ring: #4a8be8; }
+.treasure-chest-details .item-details-header[data-rarity="veryrare" i] { --ring: #a45cf0; }
+.treasure-chest-details .item-details-header[data-rarity="legendary" i] { --ring: #f0902e; }
+.treasure-chest-details .item-details-header[data-rarity="artifact" i] { --ring: #d9b64f; }
+
+.treasure-chest-details .item-details-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.treasure-chest-details .item-details-facts li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--tc-line);
+  border-radius: 6px;
+  background: rgb(0 0 0 / 0.22);
+}
+
+.treasure-chest-details .item-details-facts span {
+  color: var(--tc-muted);
+  font-size: 0.8rem;
+}
+
+.treasure-chest-details .item-details-description {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--tc-line);
+}
+
+.treasure-chest-details .item-details-description:empty {
+  display: none;
+}
+
+.treasure-chest-details .item-details-description > :first-child {
+  margin-top: 0;
+}
+
+/* --------------------------------------------------------------------------
+   2c. The pop-up players see before a locked or trapped chest will open
+   -------------------------------------------------------------------------- */
+.treasure-chest-gate {
+  --tc-gold: #c4a574;
+  --tc-line: rgb(196 165 116 / 0.3);
+  --tc-muted: var(--color-text-secondary, #c7bba8);
+}
+
+.treasure-chest-gate .gate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.treasure-chest-gate .gate-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.treasure-chest-gate .gate-header img {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border: 3px solid var(--tc-gold);
+  border-radius: 50%;
+  background: #1b140e;
+}
+
+.treasure-chest-gate .gate-header p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+/* What the character has found out so far */
+.treasure-chest-gate .gate-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--tc-line);
+  border-left: 3px solid var(--tc-gold);
+  border-radius: 6px;
+  background: rgb(0 0 0 / 0.22);
+}
+
+.treasure-chest-gate .gate-status p {
+  margin: 0;
+}
+
+.treasure-chest-gate .gate-status i {
+  width: 1.2em;
+  color: var(--tc-gold);
+  text-align: center;
+}
+
+.treasure-chest-gate .gate-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.treasure-chest-gate .gate-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  width: 100%;
+  margin: 0;
+}
+
+.treasure-chest-gate .gate-actions button i {
+  width: 1.2em;
+  text-align: center;
+}
+
+.treasure-chest-gate .gate-hint {
+  margin: 0;
+  color: var(--tc-muted);
+  font-size: 0.8rem;
+}
 
 /* --------------------------------------------------------------------------
    3. The item browser

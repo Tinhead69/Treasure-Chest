@@ -119,18 +119,40 @@ async function chooseTrapped() {
 /**
  * @param {object} [options]
  * @param {string|null} [options.folder]
+ * @param {string} [options.name] what the person typed; blank uses the default name
  * @returns {Promise<Item|null>}
  */
-async function createChest({ folder = null } = {}) {
+async function createChest({ folder = null, name = "" } = {}) {
   const trapped = await chooseTrapped();
   if (trapped === null) return null;
   const security = defaultSecurity();
   security.trapped = trapped;
 
+  const chestName = String(name ?? "").trim() || game.i18n.localize("TREASURE_CHEST.Create.DefaultName");
+  let item = null;
+  try {
+    item = await createChestItem(chestName, folder, security);
+  } catch (error) {
+    console.error("Treasure Chest | Could not create the chest", error);
+    ui.notifications.error(`Treasure Chest: could not create "${chestName}". ${error.message ?? error}`);
+    return null;
+  }
+  ui.notifications.info(game.i18n.format("TREASURE_CHEST.Create.Created", { name: item.name }));
+  item.sheet?.render(true);
+  return item;
+}
+
+/**
+ * @param {string} name
+ * @param {string|null} folder
+ * @param {object} security
+ * @returns {Promise<Item>}
+ */
+async function createChestItem(name, folder, security) {
   const ownership = foundry.CONST?.DOCUMENT_OWNERSHIP_LEVELS ?? CONST?.DOCUMENT_OWNERSHIP_LEVELS;
   const observer = ownership?.OBSERVER ?? 2;
-  const item = await foundry.documents.Item.implementation.create({
-    name: game.i18n.localize("TREASURE_CHEST.Create.DefaultName"),
+  return foundry.documents.Item.implementation.create({
+    name,
     type: "loot",
     img: chestArtwork(),
     folder,
@@ -145,9 +167,6 @@ async function createChest({ folder = null } = {}) {
       core: { sheetClass: `${MODULE_ID}.ChestSheet` }
     }
   });
-  ui.notifications.info(game.i18n.format("TREASURE_CHEST.Create.Created", { name: item.name }));
-  item.sheet?.render(true);
-  return item;
 }
 
 /** @param {HTMLElement|jQuery|null} htmlOrElement */
@@ -203,7 +222,8 @@ function injectChestChoice(app, htmlOrElement) {
       event.preventDefault();
       event.stopImmediatePropagation();
       const folder = form.querySelector('[name="folder"]')?.value || null;
-      const item = await createChest({ folder });
+      const name = form.querySelector('[name="name"]')?.value ?? "";
+      const item = await createChest({ folder, name });
       if (item) app.close();
     };
 
