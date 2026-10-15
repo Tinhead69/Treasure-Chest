@@ -320,11 +320,16 @@ function refreshOpenChests() {
   }
 }
 
-function patchTokenDoubleClick() {
-  const TokenClass = foundry.canvas?.placeables?.Token ?? CONFIG.Token?.objectClass;
-  if (!TokenClass?.prototype || TokenClass.prototype._treasureChestPatched) return;
-  const original = TokenClass.prototype._onClickLeft2;
-  TokenClass.prototype._onClickLeft2 = function onChestDoubleClick(event) {
+/**
+ * @param {Function|undefined} TokenClass
+ * @param {boolean} requireOwn only patch if the class defines its own handler
+ */
+function patchTokenClass(TokenClass, requireOwn) {
+  const proto = TokenClass?.prototype;
+  if (!proto || Object.hasOwn(proto, "_treasureChestPatched")) return;
+  if (requireOwn && !Object.hasOwn(proto, "_onClickLeft2")) return;
+  const original = proto._onClickLeft2;
+  proto._onClickLeft2 = function onChestDoubleClick(event) {
     const uuid = this.document?.getFlag?.(MODULE_ID, "chestUuid");
     if (uuid) {
       openPlacedChest(uuid);
@@ -332,11 +337,41 @@ function patchTokenDoubleClick() {
     }
     return original?.call(this, event);
   };
-  TokenClass.prototype._treasureChestPatched = true;
+  proto._treasureChestPatched = true;
+}
+
+/**
+ * Must run before the canvas draws. A token keeps the double-click handler it
+ * had when it was drawn, so patching late leaves every token that was already on
+ * the scene at load time opening its marker actor instead of the chest.
+ */
+function patchTokenDoubleClick() {
+  const base = foundry.canvas?.placeables?.Token;
+  patchTokenClass(base ?? CONFIG.Token?.objectClass, false);
+  const configured = CONFIG.Token?.objectClass;
+  if (configured && configured !== base) patchTokenClass(configured, true);
+}
+
+/**
+ * Safety net. A chest's marker actor exists only so the chest can be a token.
+ * If anything tries to open its sheet (a double-click, the sidebar, the token
+ * HUD), open the chest instead.
+ * @param {Application} app
+ */
+function redirectMarkerSheet(app) {
+  const actor = app?.document;
+  if (actor?.documentName !== "Actor") return;
+  const uuid = actor.getFlag?.(MODULE_ID, "chestUuid");
+  if (!uuid) return;
+  void app.close();
+  openPlacedChest(uuid);
 }
 
 export function registerSceneHooks() {
   registerChestGate();
+  patchTokenDoubleClick();
+  Hooks.on("renderApplicationV2", redirectMarkerSheet);
+  Hooks.on("renderActorSheet", redirectMarkerSheet);
   Hooks.on("dropCanvasData", onDropCanvasData);
   Hooks.on("canvasReady", () => {
     bindDoubleClick();
