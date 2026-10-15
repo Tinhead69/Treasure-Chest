@@ -46,7 +46,8 @@ export const GEAR_TYPES = new Set([
   "backpack"
 ]);
 
-export const SECTION_ORDER = ["equipment", "consumable", "magic"];
+// Same sections, in the same order, as the dnd5e character sheet inventory.
+export const SECTION_ORDER = ["weapon", "equipment", "consumable", "tool", "container", "loot"];
 
 const MAGIC_RARITIES = new Set(["uncommon", "rare", "veryrare", "legendary", "artifact"]);
 
@@ -90,23 +91,23 @@ export function isMagicSystem(system) {
 }
 
 /**
- * Equipment, consumable, or magic. Magic wins over the other two.
- * @param {{ data?: { type?: string, system?: object } }} entry
- * @returns {"equipment"|"consumable"|"magic"}
+ * Which inventory section an entry belongs in. Anything unrecognised goes
+ * under loot, and the older "backpack" type counts as a container.
+ * @param {{ data?: { type?: string } }} entry
+ * @returns {"weapon"|"equipment"|"consumable"|"tool"|"container"|"loot"}
  */
 export function itemCategory(entry) {
-  const data = entry?.data ?? {};
-  if (isMagicSystem(data.system)) return "magic";
-  if (data.type === "consumable") return "consumable";
-  return "equipment";
+  const type = entry?.data?.type;
+  if (type === "backpack") return "container";
+  return SECTION_ORDER.includes(type) ? type : "loot";
 }
 
 /**
  * @param {Array<object>} contents
- * @returns {Record<"equipment"|"consumable"|"magic", object[]>}
+ * @returns {Record<string, object[]>} one list per id in SECTION_ORDER
  */
 export function groupContents(contents) {
-  const buckets = { equipment: [], consumable: [], magic: [] };
+  const buckets = Object.fromEntries(SECTION_ORDER.map((id) => [id, []]));
   for (const entry of contents ?? []) {
     const category = itemCategory(entry);
     buckets[category].push(entry);

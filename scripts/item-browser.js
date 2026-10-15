@@ -70,6 +70,21 @@ function closeSlowNotice() {
 }
 
 /**
+ * Index values, not Map pairs. A spread of the index is `[id, entry]`.
+ * @param {Collection|Map|Array|null|undefined} index
+ * @returns {object[]}
+ */
+function rowsFromIndex(index) {
+  if (!index) return [];
+  const values = typeof index.values === "function"
+    ? [...index.values()]
+    : Array.isArray(index) ? index : [];
+  return values
+    .map((entry) => (Array.isArray(entry) ? entry[1] : entry))
+    .filter((entry) => entry && typeof entry === "object");
+}
+
+/**
  * @param {CompendiumCollection} pack
  * @returns {Promise<boolean>}
  */
@@ -78,17 +93,14 @@ async function packContainsGear(pack) {
   let hasGear = false;
   try {
     const index = await pack.getIndex({ fields: ["type"] });
-    const rows = index.contents ?? [...index];
-    let sawType = false;
-    for (const entry of rows) {
-      if (!entry.type) continue;
-      sawType = true;
-      if (GEAR_TYPES.has(entry.type)) {
-        hasGear = true;
-        break;
-      }
+    const rows = rowsFromIndex(index);
+    const types = new Set(rows.map((entry) => entry.type).filter(Boolean));
+    if (types.size) {
+      hasGear = [...types].some((type) => GEAR_TYPES.has(type));
+    } else if (rows.length) {
+      const matches = await pack.getDocuments({ type__in: [...GEAR_TYPES] });
+      hasGear = matches.length > 0;
     }
-    if (!hasGear && rows.length && !sawType) hasGear = true;
   } catch (error) {
     console.error("Treasure Chest | Could not index compendium", pack.collection, error);
     hasGear = false;
@@ -137,8 +149,8 @@ export async function loadBrowserEntries(sourceId) {
 
   const pack = game.packs.get(sourceId);
   if (!pack) return [];
-  const index = await pack.getIndex();
-  const rows = index.contents ?? [...index];
+  const index = await pack.getIndex({ fields: ["type", "img"] });
+  const rows = rowsFromIndex(index);
   return rows
     .filter((entry) => GEAR_TYPES.has(entry.type))
     .map((entry) => ({

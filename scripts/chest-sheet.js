@@ -27,10 +27,15 @@ import { requestCheck, securityFormOptions, securityFromForm } from "./security.
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ItemSheetV2 } = foundry.applications.sheets;
 
+// [dnd5e translation key, English fallback]. Borrowing dnd5e's own words means
+// the headings follow the player's language without extra lang entries.
 const SECTION_LABELS = {
-  equipment: "TREASURE_CHEST.Sections.Equipment",
-  consumable: "TREASURE_CHEST.Sections.Consumable",
-  magic: "TREASURE_CHEST.Sections.Magic"
+  weapon: ["DND5E.ItemTypeWeaponPl", "Weapons"],
+  equipment: ["DND5E.ItemTypeEquipmentPl", "Equipment"],
+  consumable: ["DND5E.ItemTypeConsumablePl", "Consumables"],
+  tool: ["DND5E.ItemTypeToolPl", "Tools"],
+  container: ["DND5E.ItemTypeContainerPl", "Containers"],
+  loot: ["DND5E.ItemTypeLootPl", "Loot"]
 };
 
 export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
@@ -151,13 +156,20 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
         value: currency[key],
         takeLabel: game.i18n.format("TREASURE_CHEST.Actions.TakeDenom", { denom: key.toUpperCase() })
       })),
+      columns: {
+        quantity: localizeOr("DND5E.Quantity", "Quantity"),
+        weight: localizeOr("DND5E.Weight", "Weight"),
+        price: localizeOr("DND5E.Price", "Price")
+      },
       sections: SECTION_ORDER.map((id) => ({
         id,
-        label: game.i18n.localize(SECTION_LABELS[id]),
+        label: localizeOr(...SECTION_LABELS[id]),
         count: grouped[id].length,
         items: grouped[id].map((entry) => ({
           ...entry,
-          rarity: rarityText(entry)
+          rarity: rarityText(entry),
+          weight: weightText(entry),
+          price: priceText(entry)
         }))
       }))
     };
@@ -374,4 +386,41 @@ function rarityText(entry) {
   if (typeof label === "string") return game.i18n.localize(label);
   if (typeof label?.label === "string") return game.i18n.localize(label.label);
   return String(rarity);
+}
+
+/**
+ * Translate a key, falling back to plain English if the key does not exist.
+ * @param {string} key
+ * @param {string} fallback
+ * @returns {string}
+ */
+function localizeOr(key, fallback) {
+  const text = game.i18n.localize(key);
+  return text === key ? fallback : text;
+}
+
+/**
+ * Weight of one item, e.g. "3 lb". Empty when it weighs nothing.
+ * dnd5e 4+ stores { value, units }; older versions store a bare number.
+ * @param {object} entry
+ * @returns {string}
+ */
+function weightText(entry) {
+  const raw = entry?.data?.system?.weight;
+  const isObject = raw !== null && typeof raw === "object";
+  const value = Number(isObject ? raw.value : raw);
+  if (!Number.isFinite(value) || value <= 0) return "";
+  return isObject && raw.units ? `${value} ${raw.units}` : String(value);
+}
+
+/**
+ * Price of one item, e.g. "25 gp". Empty when it has no price.
+ * @param {object} entry
+ * @returns {string}
+ */
+function priceText(entry) {
+  const price = entry?.data?.system?.price;
+  const value = Number(price?.value);
+  if (!Number.isFinite(value) || value <= 0) return "";
+  return `${value} ${price.denomination ?? "gp"}`;
 }

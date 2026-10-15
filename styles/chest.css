@@ -1,3 +1,14 @@
+/* ==========================================================================
+   Treasure Chest
+   1. Shared bits (create dialog, chest-type picker, loot-place picker, chat)
+   2. The chest sheet
+   3. The item browser
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. Shared bits (unchanged from before)
+   -------------------------------------------------------------------------- */
 @layer treasure-chest {
   .treasure-chest-choice {
     display: flex;
@@ -25,139 +36,7 @@
     flex: 0 0 auto;
   }
 
-  .treasure-chest-sheet {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    min-height: 100%;
-  }
-
-  .treasure-chest-sheet .chest-header {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-start;
-  }
-
-  .treasure-chest-sheet .portrait-button {
-    padding: 0;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-  }
-
-  .treasure-chest-sheet .profile-img {
-    width: 64px;
-    height: 64px;
-    object-fit: cover;
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-  }
-
-  .treasure-chest-sheet .header-fields {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .treasure-chest-sheet .header-fields input[name="name"] {
-    width: 100%;
-    font-size: var(--font-size-20);
-    font-weight: 600;
-  }
-
-  .treasure-chest-sheet .hint,
-  .treasure-chest-sheet .empty-hint,
-  .treasure-chest-browser .browser-count {
-    margin: 0.25rem 0 0;
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-12);
-  }
-
-  .treasure-chest-sheet .combat-warning {
-    margin: 0;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--color-border);
-    border-left: 3px solid var(--color-level-warning, var(--color-warm-2));
-    background: var(--color-bg-tertiary);
-  }
-
-  .treasure-chest-sheet .currency-grid {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.5rem;
-  }
-
-  .treasure-chest-sheet .denom {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .treasure-chest-sheet .denom-label {
-    font-size: var(--font-size-12);
-    font-weight: 600;
-  }
-
-  .treasure-chest-sheet .denom-controls {
-    display: flex;
-    gap: 0.25rem;
-  }
-
-  .treasure-chest-sheet .denom input {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .treasure-chest-sheet .security {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-  }
-
-  .treasure-chest-sheet .security h3,
-  .treasure-chest-sheet .security-checks,
-  .treasure-chest-sheet .security-grid {
-    margin: 0;
-  }
-
-  .treasure-chest-sheet .security-checks {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-
-  .treasure-chest-sheet .security-checks label,
-  .treasure-chest-sheet .security-grid label,
-  .treasure-chest-sheet .security > label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .treasure-chest-sheet .security-checks label {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .treasure-chest-sheet .security-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-  }
-
-  .treasure-chest-sheet .item-row[draggable="true"] {
-    cursor: grab;
-  }
-
-  .treasure-chest-kind {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    margin-top: 0.75rem;
-  }
-
+  .treasure-chest-kind,
   .treasure-chest-place {
     display: flex;
     flex-direction: column;
@@ -167,90 +46,6 @@
 
   .treasure-chest-place select {
     width: 100%;
-  }
-
-  .treasure-chest-browser .browser-toolbar {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .treasure-chest-sheet .chest-toolbar,
-  .treasure-chest-browser .browser-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .treasure-chest-sheet .chest-drop-zone {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    min-height: 160px;
-    padding: 0.5rem;
-    border: 1px dashed var(--color-border);
-    border-radius: var(--border-radius);
-  }
-
-  .treasure-chest-sheet .chest-drop-zone.drag-over {
-    border-color: var(--color-warm-2);
-    background: var(--color-bg-tertiary);
-  }
-
-  .treasure-chest-sheet .chest-section h3 {
-    margin: 0 0 0.35rem;
-    font-size: var(--font-size-14);
-  }
-
-  .treasure-chest-sheet .item-list,
-  .treasure-chest-browser .browser-results {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .treasure-chest-sheet .item-row,
-  .treasure-chest-browser .browser-results li label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem 0;
-  }
-
-  .treasure-chest-sheet .item-row img,
-  .treasure-chest-browser .browser-results img {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
-    flex: 0 0 auto;
-  }
-
-  .treasure-chest-sheet .item-name,
-  .treasure-chest-browser .browser-results span {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .treasure-chest-sheet .item-rarity,
-  .treasure-chest-sheet .item-qty {
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-12);
-  }
-
-  .treasure-chest-browser .browser-toolbar {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .treasure-chest-browser .browser-results {
-    max-height: 360px;
-    overflow: auto;
-  }
-
-  .treasure-chest-browser .browser-results li[hidden] {
-    display: none;
   }
 
   .chat-message .treasure-chest-request {
@@ -270,6 +65,26 @@
   }
 }
 
+
+/* --------------------------------------------------------------------------
+   2. The chest sheet
+
+   Everything is scoped to  form.treasure-chest  so nothing leaks into the
+   rest of Foundry. The values you are most likely to want to change are the
+   custom properties in the first rule below.
+   -------------------------------------------------------------------------- */
+form.treasure-chest {
+  --tc-gold: #c4a574;                        /* accent: borders, focus, drag highlight */
+  --tc-line: rgb(196 165 116 / 0.3);         /* hairline borders */
+  --tc-line-strong: rgb(196 165 116 / 0.6);
+  --tc-surface: rgb(0 0 0 / 0.22);           /* panel background */
+  --tc-hover: rgb(196 165 116 / 0.1);        /* row hover, drag-over tint */
+  --tc-footer-bg: #1d1913;                   /* must be solid, list scrolls under it */
+  --tc-muted: var(--color-text-secondary, #c7bba8);
+  --tc-radius: 6px;
+}
+
+/* Window shell: the sheet scrolls, the window itself does not. */
 form.treasure-chest.application {
   max-height: calc(100vh - 1rem);
 }
@@ -279,9 +94,12 @@ form.treasure-chest .window-content {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+  padding: 0;
 }
 
 form.treasure-chest .treasure-chest-sheet {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
   overflow-x: hidden;
@@ -289,36 +107,54 @@ form.treasure-chest .treasure-chest-sheet {
   overscroll-behavior: contain;
 }
 
+/* The padded content area. flex-grow pushes the footer to the bottom of the
+   window when the chest has only a few items. */
+form.treasure-chest .sheet-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+}
+
+
+/* ---- Header -------------------------------------------------------------- */
 form.treasure-chest .sheet-header {
   display: flex;
-  gap: 1rem;
   align-items: center;
+  gap: 1rem;
 }
 
 form.treasure-chest .portrait-button {
+  flex: 0 0 auto;
   padding: 0;
   border: 0;
+  border-radius: 50%;
   background: transparent;
   cursor: pointer;
-  flex: 0 0 auto;
 }
 
 form.treasure-chest .profile-img {
-  width: 108px;
-  height: 108px;
+  flex: 0 0 auto;
+  width: 92px;
+  height: 92px;
   object-fit: cover;
+  border: 3px solid var(--tc-gold);
   border-radius: 50%;
-  border: 3px solid #c4a574;
-  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.45);
   background: #1b140e;
+  box-shadow: 0 0 0 3px rgb(0 0 0 / 0.4);
+}
+
+form.treasure-chest .portrait-button:hover .profile-img {
+  box-shadow: 0 0 0 3px rgb(0 0 0 / 0.4), 0 0 12px var(--tc-gold);
 }
 
 form.treasure-chest .header-main {
-  flex: 1;
-  min-width: 0;
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 form.treasure-chest .name-row {
@@ -327,70 +163,79 @@ form.treasure-chest .name-row {
   gap: 0.75rem;
 }
 
-form.treasure-chest input.document-name,
-form.treasure-chest h2.document-name {
+form.treasure-chest .document-name {
   flex: 1;
+  height: auto;
   min-width: 0;
   margin: 0;
-  padding: 0;
+  padding: 0 0 0.1rem;
   border: 0;
+  border-bottom: 1px dashed transparent;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  color: var(--color-text-light-highlight, #f4efe4);
-  font-size: 1.7rem;
+  color: inherit;
+  font-size: 1.5rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* A hint that the name can be edited */
+form.treasure-chest input.document-name:hover,
 form.treasure-chest input.document-name:focus {
+  border-bottom-color: var(--tc-line-strong);
   outline: none;
   box-shadow: none;
 }
 
 form.treasure-chest .type-badge {
   display: flex;
-  flex-direction: column;
+  flex: 0 0 auto;
   align-items: center;
-  gap: 0.15rem;
-  color: var(--color-text-secondary, #c7bba8);
-  font-size: 0.7rem;
+  gap: 0.35rem;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--tc-line);
+  border-radius: 999px;
+  color: var(--tc-muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
 }
 
-form.treasure-chest .type-badge i {
-  font-size: 1.1rem;
+form.treasure-chest .header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
 }
 
 form.treasure-chest .summary-bar {
   display: flex;
-  border: 1px solid rgba(196, 165, 116, 0.35);
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.25);
+  gap: 0.5rem;
 }
 
-form.treasure-chest .summary-bar > div {
-  flex: 1;
+form.treasure-chest .summary-bar .stat {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  padding: 0.4rem 0.5rem;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--tc-line);
+  border-radius: var(--tc-radius);
+  background: var(--tc-surface);
 }
 
-form.treasure-chest .summary-bar > div + div {
-  border-left: 1px solid rgba(196, 165, 116, 0.35);
+form.treasure-chest .summary-bar .stat span {
+  color: var(--tc-muted);
+  font-size: 0.8rem;
 }
 
-form.treasure-chest .summary-bar span {
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-text-secondary, #c7bba8);
-}
-
-form.treasure-chest .summary-bar strong {
-  font-size: 1rem;
+form.treasure-chest .summary-bar .stat strong {
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
 }
 
 form.treasure-chest .visibility-toggle {
@@ -398,7 +243,7 @@ form.treasure-chest .visibility-toggle {
   align-items: center;
   gap: 0.4rem;
   margin: 0;
-  color: var(--color-text-secondary, #c7bba8);
+  color: var(--tc-muted);
   font-size: 0.85rem;
 }
 
@@ -406,39 +251,561 @@ form.treasure-chest .visibility-toggle input {
   margin: 0;
 }
 
-form.treasure-chest .currency-row {
+
+/* ---- Status banners ------------------------------------------------------ */
+form.treasure-chest .status-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--tc-line);
+  border-left-width: 3px;
+  border-radius: var(--tc-radius);
+  background: var(--tc-surface);
+}
+
+form.treasure-chest .status-banner i {
+  flex: 0 0 auto;
+  width: 1.2em;
+  text-align: center;
+}
+
+form.treasure-chest .status-banner.is-sealed {
+  border-left-color: var(--tc-gold);
+}
+
+form.treasure-chest .status-banner.is-sealed i {
+  color: var(--tc-gold);
+}
+
+form.treasure-chest .status-banner.is-combat {
+  border-left-color: #d9534f;
+}
+
+form.treasure-chest .status-banner.is-combat i {
+  color: #d9534f;
+}
+
+
+/* ---- Panels (lock and trap) --------------------------------------------- */
+form.treasure-chest .panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--tc-line);
+  border-radius: var(--tc-radius);
+  background: var(--tc-surface);
+}
+
+/* Lets the field grid below react to the width of the window, not the screen */
+form.treasure-chest .security {
+  container-type: inline-size;
+}
+
+form.treasure-chest .panel-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+form.treasure-chest .status-line,
+form.treasure-chest .hint {
+  margin: 0;
+}
+
+form.treasure-chest .hint {
+  color: var(--tc-muted);
+  font-size: 0.8rem;
+}
+
+/* Checkbox "chips" */
+form.treasure-chest .flag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* Hide the row entirely when it has no checkboxes in it */
+form.treasure-chest .flag-row:not(:has(.flag)) {
+  display: none;
+}
+
+form.treasure-chest .flag-row.is-state {
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--tc-line);
+}
+
+form.treasure-chest .flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--tc-line);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+form.treasure-chest .flag input {
+  margin: 0;
+}
+
+form.treasure-chest .flag:has(input:checked) {
+  border-color: var(--tc-line-strong);
+  background: var(--tc-hover);
+}
+
+/* Label above input */
+form.treasure-chest .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  color: var(--tc-muted);
+  font-size: 0.8rem;
+}
+
+form.treasure-chest .field input,
+form.treasure-chest .field select {
+  width: 100%;
+  min-width: 0;
+}
+
+form.treasure-chest .security-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+/* Wide enough: four columns, so skill and DC sit side by side */
+@container (min-width: 30rem) {
+  form.treasure-chest .security-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+form.treasure-chest .action-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-form.treasure-chest .currency-row .denom {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+form.treasure-chest .action-row button {
+  margin: 0;
 }
 
-form.treasure-chest .currency-row .denom img {
-  width: 22px;
-  height: 22px;
+
+/* ---- Coins --------------------------------------------------------------- */
+form.treasure-chest .coins {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+  gap: 0.5rem;
+}
+
+form.treasure-chest .denom {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0.45rem 0.45rem 0.5rem;
+  border: 1px solid var(--tc-line);
+  border-radius: var(--tc-radius);
+  background: var(--tc-surface);
+}
+
+form.treasure-chest .denom-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+form.treasure-chest .denom-head img {
+  width: 20px;
+  height: 20px;
   object-fit: contain;
 }
 
-form.treasure-chest .currency-row .denom input {
-  width: 4.5rem;
+form.treasure-chest .denom-label {
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
+form.treasure-chest .denom input {
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Players cannot edit coins, so show the number as plain text */
+form.treasure-chest .denom input:disabled {
+  border-color: transparent;
+  background: transparent;
+  color: inherit;
+  opacity: 1;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+form.treasure-chest .denom button {
+  margin: 0;
+}
+
+/* Players only: fade out coin types the chest does not hold */
+form.treasure-chest .treasure-chest-sheet:not(.is-editable) .denom.is-empty {
+  opacity: 0.4;
+}
+
+
+/* ---- Contents ------------------------------------------------------------ */
 form.treasure-chest .chest-drop-zone {
-  position: relative;
-  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 0.25rem;
+  border: 2px dashed transparent;
+  border-radius: var(--tc-radius);
+  container-type: inline-size;
+  transition: border-color 0.15s, background-color 0.15s;
 }
 
-form.treasure-chest .add-item {
-  position: absolute;
-  right: 0.6rem;
-  bottom: 0.6rem;
-  width: 2rem;
-  height: 2rem;
+/* The "drag-over" class is added by chest-sheet.js while you drag an item over */
+form.treasure-chest .chest-drop-zone.drag-over {
+  border-color: var(--tc-gold);
+  background: var(--tc-hover);
+}
+
+/* Each section is a red bar (type name + column headings) over a list of rows.
+   The bar and the rows share one grid, --cols, so the columns line up. */
+form.treasure-chest .chest-section {
+  --cols: minmax(0, 1fr) 4.5rem 4.5rem 5rem 4.75rem;
+  --bar-top: #7a0a28;
+  --bar-bottom: #55001a;
+}
+
+form.treasure-chest .inv-header,
+form.treasure-chest .item-row {
+  display: grid;
+  grid-template-columns: var(--cols);
+  align-items: center;
+}
+
+form.treasure-chest .inv-header {
+  border: 1px solid #2a0510;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(var(--bar-top), var(--bar-bottom));
+  color: #f3e7e2;
+}
+
+form.treasure-chest .inv-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.3rem 0.7rem;
+  border: 0;
+  font-size: 1rem;
+  font-variant: small-caps;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+form.treasure-chest .inv-title .count {
+  font-size: 0.8rem;
+  font-variant: normal;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+form.treasure-chest .inv-header .col {
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid rgb(0 0 0 / 0.35);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+form.treasure-chest .item-list {
+  margin: 0;
   padding: 0;
+  border: 1px solid rgb(0 0 0 / 0.4);
+  border-top: 0;
+  list-style: none;
+}
+
+/* --rarity tints the row and rings the icon. Plain items have neither. */
+form.treasure-chest .item-row {
+  --rarity: transparent;
+  --ring: rgb(255 255 255 / 0.14);
+  padding: 0.2rem 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.06);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--rarity) 30%, transparent), transparent 75%),
+    rgb(0 0 0 / 0.18);
+}
+
+form.treasure-chest .item-row:last-child {
+  border-bottom: 0;
+}
+
+form.treasure-chest .item-row:hover {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--rarity) 42%, transparent), transparent 85%),
+    rgb(196 165 116 / 0.12);
+}
+
+form.treasure-chest .item-row[draggable="true"] {
+  cursor: grab;
+}
+
+/* Rarity colours. data-rarity is the item's own rarity value. */
+form.treasure-chest .item-row[data-rarity="uncommon" i] { --rarity: #5cc24a; --ring: #5cc24a; }
+form.treasure-chest .item-row[data-rarity="rare" i] { --rarity: #4a8be8; --ring: #4a8be8; }
+form.treasure-chest .item-row[data-rarity="veryrare" i] { --rarity: #a45cf0; --ring: #a45cf0; }
+form.treasure-chest .item-row[data-rarity="legendary" i] { --rarity: #f0902e; --ring: #f0902e; }
+form.treasure-chest .item-row[data-rarity="artifact" i] { --rarity: #d9b64f; --ring: #d9b64f; }
+
+form.treasure-chest .item-main {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  padding-left: 0.4rem;
+}
+
+form.treasure-chest .item-main img {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  border: 2px solid var(--ring);
   border-radius: 4px;
+  background: rgb(0 0 0 / 0.35);
+}
+
+form.treasure-chest .item-name {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+form.treasure-chest .item-row .col {
+  color: var(--tc-muted);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+form.treasure-chest .item-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.2rem;
+  padding-right: 0.3rem;
+}
+
+/* Plain icon buttons, like the dnd5e sheet */
+form.treasure-chest .icon-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  line-height: 1;
+}
+
+form.treasure-chest .icon-btn:hover:not(:disabled) {
+  color: var(--tc-gold);
+  text-shadow: 0 0 6px var(--tc-gold);
+}
+
+form.treasure-chest .icon-btn:disabled {
+  opacity: 0.35;
+}
+
+/* Narrow window: drop weight and price, keep the rest */
+@container (max-width: 26rem) {
+  form.treasure-chest .chest-section {
+    --cols: minmax(0, 1fr) 3.5rem 4.75rem;
+  }
+
+  form.treasure-chest .col-weight,
+  form.treasure-chest .col-price {
+    display: none;
+  }
+}
+
+form.treasure-chest .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.75rem 1rem;
+  border: 1px dashed var(--tc-line);
+  border-radius: var(--tc-radius);
+  color: var(--tc-muted);
+  text-align: center;
+}
+
+form.treasure-chest .empty-state i {
+  font-size: 1.6rem;
+  opacity: 0.7;
+}
+
+form.treasure-chest .empty-state p {
+  margin: 0;
+}
+
+form.treasure-chest .zone-hints {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+form.treasure-chest .empty-hint {
+  margin: 0;
+  color: var(--tc-muted);
+  font-size: 0.78rem;
+}
+
+
+/* ---- Footer (sticks to the bottom of the window) ------------------------- */
+form.treasure-chest .sheet-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--tc-line);
+  background: var(--tc-footer-bg);
+}
+
+form.treasure-chest .sheet-footer button {
+  margin: 0;
+}
+
+/* The GM's "add items" button sits on the left, away from the take buttons */
+form.treasure-chest .sheet-footer .add-item {
+  margin-right: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  form.treasure-chest .chest-drop-zone {
+    transition: none;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   3. The item browser
+   -------------------------------------------------------------------------- */
+.treasure-chest-browser-app .window-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.75rem;
+}
+
+/* The results list takes all the spare height, so resizing the window works */
+.treasure-chest-browser {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
+.treasure-chest-browser .browser-toolbar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.treasure-chest-browser .browser-toolbar label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.8rem;
+}
+
+.treasure-chest-browser .hint,
+.treasure-chest-browser .browser-count {
+  margin: 0;
+  color: var(--color-text-secondary, #c7bba8);
+  font-size: 0.8rem;
+}
+
+.treasure-chest-browser .browser-results {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid rgb(196 165 116 / 0.3);
+  border-radius: 6px;
+}
+
+.treasure-chest-browser .browser-results li[hidden] {
+  display: none;
+}
+
+.treasure-chest-browser .browser-results li label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+}
+
+.treasure-chest-browser .browser-results li label:hover {
+  background: rgb(196 165 116 / 0.1);
+}
+
+.treasure-chest-browser .browser-results input[type="checkbox"] {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.treasure-chest-browser .browser-results img {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.treasure-chest-browser .browser-results span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.treasure-chest-browser .browser-actions {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.treasure-chest-browser .browser-actions button {
+  margin: 0;
 }
