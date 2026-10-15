@@ -1,4 +1,5 @@
 import { MODULE_ID, chestArtwork, isChest, isChestHidden } from "./data.js";
+import { openChest, registerChestGate } from "./chest-gate.js";
 
 const HOVER_NAME = () => foundry.CONST.TOKEN_DISPLAY_MODES.HOVER;
 const HIDE_BARS = () => foundry.CONST.TOKEN_DISPLAY_MODES.NONE;
@@ -261,7 +262,7 @@ async function openPlacedChest(uuid) {
     return;
   }
   if (!game.user.isGM && isChestHidden(item)) return;
-  item.sheet?.render(true);
+  await openChest(item);
 }
 
 function bindDoubleClick() {
@@ -298,6 +299,7 @@ function patchTokenDoubleClick() {
 }
 
 export function registerSceneHooks() {
+  registerChestGate();
   Hooks.on("dropCanvasData", onDropCanvasData);
   Hooks.on("canvasReady", () => {
     bindDoubleClick();

@@ -169,7 +169,7 @@ async function createChestItem(name, folder, security) {
   });
 }
 
-/** @param {HTMLElement|JQuery|null} htmlOrElement */
+/** @param {HTMLElement|jQuery|null} htmlOrElement */
 function resolveAppElement(htmlOrElement) {
   if (!htmlOrElement) return null;
   if (htmlOrElement instanceof HTMLElement) return htmlOrElement;
@@ -178,114 +178,66 @@ function resolveAppElement(htmlOrElement) {
 }
 
 /**
- * The create-item window title is no longer "Create New Item", and the type
- * list can render after app.element exists. Search the element the hook passed.
- * @param {HTMLElement} root
- * @returns {HTMLElement|null}
- */
-function findLootRow(root) {
-  const input = root.querySelector('input[name="type"][value="loot"]')
-    ?? root.querySelector('input[type="radio"][value="loot"]');
-  if (input) return input.closest("label, li") ?? input.parentElement;
-
-  const lootName = game.i18n.localize(CONFIG.Item?.typeLabels?.loot ?? "Loot");
-  for (const row of root.querySelectorAll("label, li")) {
-    const text = row.textContent?.replace(/\s+/g, " ").trim();
-    if (text === lootName || text === "Loot") return row;
-  }
-  return null;
-}
-
-/**
- * @param {HTMLElement} row
- * @param {string} label
- */
-function setRowLabel(row, label) {
-  const caption = [...row.querySelectorAll("span")].find((span) => !span.querySelector("img, input, i"));
-  if (caption) {
-    caption.textContent = label;
-    return;
-  }
-  for (const node of row.childNodes) {
-    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-      node.textContent = label;
-      return;
-    }
-  }
-}
-
-/**
  * @param {Application} app
- * @param {HTMLElement|JQuery} htmlOrElement
+ * @param {HTMLElement|jQuery} htmlOrElement
  */
 function injectChestChoice(app, htmlOrElement) {
   try {
-    const hooked = resolveAppElement(htmlOrElement);
-    const roots = [hooked, app?.element].filter((element) => element instanceof HTMLElement);
-    for (const root of roots) {
-      if (root.querySelector(".treasure-chest-choice")) continue;
-      const lootRow = findLootRow(root);
-      if (!lootRow) continue;
+    const title = String(app?.title ?? app?.options?.window?.title ?? "");
+    const isCreateItem =
+      /Create New Item/i.test(title) ||
+      (app?.documentName === "Item" && /create/i.test(app?.constructor?.name ?? ""));
+    if (!isCreateItem && !app?.element?.querySelector?.('input[name="type"][value="loot"]')) return;
 
-      const chestRow = lootRow.cloneNode(true);
-      chestRow.classList.add("treasure-chest-choice");
-      const input = chestRow.querySelector('input[name="type"], input[type="radio"]');
-      if (!input) continue;
-      input.value = "__treasure_chest__";
-      input.checked = false;
-      input.removeAttribute("id");
-      const image = chestRow.querySelector("img");
-      if (image) {
-        image.src = chestArtwork();
-        image.alt = "";
-      }
-      setRowLabel(chestRow, game.i18n.localize("TREASURE_CHEST.Create.Type"));
-      const anchor = root.querySelector(".npc-spellbook-choice") ?? lootRow;
-      anchor.after(chestRow);
+    const root = resolveAppElement(htmlOrElement) ?? app?.element ?? null;
+    if (!root || root.querySelector(".treasure-chest-choice")) return;
+
+    const lootInput =
+      root.querySelector('input[name="type"][value="loot"]') ??
+      root.querySelector('input[value="loot"]');
+    const lootLabel = lootInput?.closest("label") ?? lootInput?.parentElement;
+    if (!lootLabel) return;
+
+    const chestLabel = lootLabel.cloneNode(true);
+    chestLabel.classList.add("treasure-chest-choice");
+    const input = chestLabel.querySelector('input[name="type"], input[type="radio"]');
+    if (!input) return;
+    input.value = "__treasure_chest__";
+    input.checked = false;
+    const image = chestLabel.querySelector("img");
+    if (image) {
+      image.src = chestArtwork();
+      image.alt = "";
     }
+    const typeName = game.i18n.localize("TREASURE_CHEST.Create.Type");
+    const caption = [...chestLabel.querySelectorAll("span")].find((span) => !span.querySelector("img, input"));
+    if (caption) caption.textContent = typeName;
+    const anchor = root.querySelector(".npc-spellbook-choice") ?? lootLabel;
+    anchor.after(chestLabel);
 
-    const host = app?.element ?? hooked;
-    if (!(host instanceof HTMLElement) || host.dataset.treasureChestCreate === "1") return;
-    const form = host.querySelector("form") ?? host.querySelector(".treasure-chest-choice")?.closest("form");
-    if (!form?.querySelector(".treasure-chest-choice")) return;
-    host.dataset.treasureChestCreate = "1";
-
+    const form = root.querySelector("form") ?? root;
     const onCreate = async (event) => {
-      if (event.type === "click") {
-        const button = event.target?.closest?.("button");
-        if (!button) return;
-        const action = button.dataset.action ?? "";
-        const creates = button.type === "submit" || /^(ok|create|confirm|yes)$/i.test(action);
-        if (!creates) return;
-      }
-      const selected = form.querySelector('input[name="type"]:checked')?.value
-        ?? form.querySelector('select[name="type"]')?.value;
+      const selected = form.querySelector('input[name="type"]:checked')?.value;
       if (selected !== "__treasure_chest__") return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      const scope = app?.element ?? form;
-      const folder = scope.querySelector('[name="folder"]')?.value || null;
-      const name = scope.querySelector('[name="name"]')?.value ?? "";
+      const folder = form.querySelector('[name="folder"]')?.value || null;
+      const name = form.querySelector('[name="name"]')?.value ?? "";
       const item = await createChest({ folder, name });
       if (item) app.close();
     };
 
     form.addEventListener("submit", onCreate, true);
-    host.addEventListener("click", onCreate, true);
+    root.querySelectorAll('button[type="submit"], button[data-action="create"]').forEach((button) => {
+      button.addEventListener("click", onCreate, true);
+    });
   } catch (error) {
     console.error("Treasure Chest | Failed to patch the create item dialog", error);
   }
 }
 
-/** @param {Application} app @param {HTMLElement|JQuery} html */
-function onCreateDialogRender(app, html) {
-  injectChestChoice(app, html);
-  queueMicrotask(() => injectChestChoice(app, app?.element ?? html));
-}
-
-Hooks.on("renderDialog", onCreateDialogRender);
-Hooks.on("renderDialogV2", onCreateDialogRender);
-Hooks.on("renderApplicationV2", onCreateDialogRender);
+Hooks.on("renderDialog", (app, html) => injectChestChoice(app, html));
+Hooks.on("renderApplicationV2", (app, element) => injectChestChoice(app, element));
 
 Hooks.on("renderItemDirectory", (app, htmlOrElement) => {
   if (!game.user.isGM) return;
