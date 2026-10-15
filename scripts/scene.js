@@ -3,39 +3,6 @@ import { MODULE_ID, chestArtwork, isChest, isChestHidden } from "./data.js";
 const HOVER_NAME = () => foundry.CONST.TOKEN_DISPLAY_MODES.HOVER;
 const HIDE_BARS = () => foundry.CONST.TOKEN_DISPLAY_MODES.NONE;
 
-
-async function promptChestOpen(item) {
-  const DialogV2 = foundry.applications.api.DialogV2;
-
-  const content = `
-    <p>${foundry.utils.escapeHTML(
-      game.i18n.localize("Do you want to check for traps or open the chest?")
-    )}</p>
-  `;
-
-  const result = await DialogV2.wait({
-    window: { title: item.name },
-    content,
-    buttons: [
-      {
-        action: "check",
-        label: game.i18n.localize("Check for Traps"),
-        default: true
-      },
-      {
-        action: "open",
-        label: game.i18n.localize("Open Chest")
-      },
-      {
-        action: "cancel",
-        label: game.i18n.localize("Cancel")
-      }
-    ]
-  });
-
-  return result?.action || null;
-}
-
 /**
  * @returns {Promise<Folder|null>}
  */
@@ -293,30 +260,8 @@ async function openPlacedChest(uuid) {
     ui.notifications.warn(game.i18n.localize("TREASURE_CHEST.Notifications.MissingChest"));
     return;
   }
-
-  // GM bypasses popup
-  if (game.user.isGM) {
-    item.sheet?.render(true);
-    return;
-  }
-
-  // Hidden chests still blocked for players
-  if (isChestHidden(item)) return;
-
-  // Player popup
-  const choice = await promptChestOpen(item);
-  if (!choice || choice === "cancel") return;
-
-  if (choice === "check") {
-    await requestCheck(item, "examine");
-    return;
-  }
-
-  if (choice === "open") {
-    await requestCheck(item, "unlock");
-    return;
-  }
-}
+  if (!game.user.isGM && isChestHidden(item)) return;
+  item.sheet?.render(true);
 }
 
 function bindDoubleClick() {

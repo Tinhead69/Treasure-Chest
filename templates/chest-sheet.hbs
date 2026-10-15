@@ -253,7 +253,7 @@
         <ol class="item-list">
           {{#each items}}
           <li class="item-row" data-entry-id="{{id}}" data-rarity="{{data.system.rarity}}" {{#if ../../canTake}}draggable="true" title="{{localize "TREASURE_CHEST.Sheet.DragRow"}}"{{/if}}>
-            <span class="item-main" data-action="showItem" role="button" tabindex="0">
+            <span class="item-main">
               {{#if img}}<img src="{{img}}" alt="" draggable="false">{{/if}}
               <span class="item-name" {{#if rarity}}title="{{rarity}}"{{/if}}>{{name}}</span>
             </span>

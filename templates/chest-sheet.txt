@@ -1,0 +1,302 @@
+<div class="treasure-chest-sheet {{#if editable}}is-editable{{/if}}">
+  <div class="sheet-main">
+
+    {{!-- ───────── Header: portrait, name, quick stats ───────── --}}
+    <header class="sheet-header">
+      {{#if editable}}
+      <button type="button" class="portrait-button" data-action="editImage">
+        <img class="profile-img" src="{{portrait}}" alt="">
+      </button>
+      {{else}}
+      <img class="profile-img" src="{{portrait}}" alt="">
+      {{/if}}
+
+      <div class="header-main">
+        <div class="name-row">
+          {{#if editable}}
+          <input class="document-name" type="text" name="name" value="{{chestName}}" spellcheck="false" autocomplete="off">
+          {{else}}
+          <h2 class="document-name">{{chestName}}</h2>
+          {{/if}}
+          <div class="type-badge">
+            <i class="fa-solid fa-box-open"></i>
+            <span>{{localize "TREASURE_CHEST.Create.Type"}}</span>
+          </div>
+        </div>
+
+        <div class="header-meta">
+          <div class="summary-bar">
+            <div class="stat">
+              <span>{{localize "TREASURE_CHEST.Sheet.TotalItems"}}</span>
+              <strong>{{totals.count}}</strong>
+            </div>
+            <div class="stat">
+              <span>{{localize "TREASURE_CHEST.Sheet.TotalQty"}}</span>
+              <strong>{{totals.quantity}}</strong>
+            </div>
+          </div>
+          {{#if isGm}}
+          <label class="visibility-toggle">
+            <input type="checkbox" name="hidden" {{#if hiddenFromPlayers}}checked{{/if}}>
+            <span>{{localize "TREASURE_CHEST.Sheet.Hidden"}}</span>
+          </label>
+          {{/if}}
+        </div>
+      </div>
+    </header>
+
+    {{!-- ───────── Status banners (combat / sealed) ───────── --}}
+    {{#if lootingBlocked}}
+    <p class="status-banner is-combat">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span>{{localize "TREASURE_CHEST.Sheet.Combat"}}</span>
+    </p>
+    {{/if}}
+    {{#if sealedText}}
+    <p class="status-banner is-sealed">
+      <i class="fa-solid fa-lock"></i>
+      <span>{{sealedText}}</span>
+    </p>
+    {{/if}}
+
+    {{!-- ───────── Lock and trap panel ───────── --}}
+    {{#if security.showPanel}}
+    <section class="panel security">
+      <h3 class="panel-title">{{security.heading}}</h3>
+
+      {{#if editable}}
+      {{!-- What the chest is --}}
+      <div class="flag-row">
+        <label class="flag"><input type="checkbox" name="security.locked" {{#if security.locked}}checked{{/if}}> {{localize "TREASURE_CHEST.Security.Locked"}}</label>
+        <label class="flag"><input type="checkbox" name="security.trapped" {{#if security.trapped}}checked{{/if}}> {{localize "TREASURE_CHEST.Security.Trapped"}}</label>
+      </div>
+
+      {{!-- Where the party has got to --}}
+      <div class="flag-row is-state">
+        {{#if security.showLockDetails}}
+        <label class="flag"><input type="checkbox" name="security.unlocked" {{#if security.unlocked}}checked{{/if}}> {{localize "TREASURE_CHEST.Security.Unlocked"}}</label>
+        {{/if}}
+        {{#if security.showTrapDetails}}
+        <label class="flag"><input type="checkbox" name="security.detected" {{#if security.detected}}checked{{/if}}> {{localize "TREASURE_CHEST.Security.Detected"}}</label>
+        <label class="flag"><input type="checkbox" name="security.understood" {{#if security.understood}}checked{{/if}}> {{localize "TREASURE_CHEST.Security.Understood"}}</label>
+        <label class="flag"><input type="checkbox" name="security.disarmed" {{#if security.disarmed}}checked{{/if}}> {{localize "TREASURE_CHEST.Security.Disarmed"}}</label>
+        <label class="flag"><input type="checkbox" name="security.triggered" {{#if security.triggered}}checked{{/if}}> {{localize "TREASURE_CHEST.Security.Triggered"}}</label>
+        {{/if}}
+      </div>
+      {{/if}}
+
+      {{#if security.locked}}
+        {{#if security.unlocked}}
+        <p class="status-line">{{localize "TREASURE_CHEST.Security.StatusUnlocked"}}</p>
+        {{else}}
+        <p class="status-line">{{localize "TREASURE_CHEST.Security.StatusLocked"}}</p>
+        {{/if}}
+      {{/if}}
+      {{#if security.trapped}}
+        {{#if security.disarmed}}
+        <p class="status-line">{{localize "TREASURE_CHEST.Security.StatusDisarmed"}}</p>
+        {{else if security.triggered}}
+        <p class="status-line">{{localize "TREASURE_CHEST.Security.StatusTriggered"}}</p>
+        {{else if security.understood}}
+        <p class="status-line">{{localize "TREASURE_CHEST.Security.StatusTrapped"}} {{security.trapName}}</p>
+        {{else if security.detected}}
+        <p class="status-line">{{localize "TREASURE_CHEST.Security.StatusUnclear"}}</p>
+        {{else if editable}}
+        <p class="status-line">{{localize "TREASURE_CHEST.Security.StatusHidden"}} {{security.trapName}}</p>
+        {{/if}}
+      {{/if}}
+
+      {{#if editable}}
+      {{#unless security.trapped}}
+      <p class="hint">{{localize "TREASURE_CHEST.Security.PlainHint"}}</p>
+      {{/unless}}
+
+      {{#if security.showLockDetails}}
+      <div class="security-grid">
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.LockDc"}}</span>
+          <input type="number" name="security.lockDc" value="{{security.lockDc}}" min="0" step="1">
+        </label>
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.ForceDc"}}</span>
+          <input type="number" name="security.forceDc" value="{{security.forceDc}}" min="0" step="1">
+        </label>
+      </div>
+      {{/if}}
+
+      {{#if security.showTrapDetails}}
+      <div class="security-grid">
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.Preset"}}</span>
+          <select name="security.preset">
+            {{#each security.presets}}
+            <option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.DetectDc"}}</span>
+          <input type="number" name="security.detectDc" value="{{security.detectDc}}" min="0" step="1">
+        </label>
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.UnderstandWith"}}</span>
+          <select name="security.understandSkill">
+            {{#each security.understandSkills}}
+            <option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.UnderstandDc"}}</span>
+          <input type="number" name="security.understandDc" value="{{security.understandDc}}" min="0" step="1">
+        </label>
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.DisarmWith"}}</span>
+          <select name="security.disarmSkill">
+            {{#each security.disarmSkills}}
+            <option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.DisarmDc"}}</span>
+          <input type="number" name="security.disarmDc" value="{{security.disarmDc}}" min="0" step="1">
+        </label>
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.Save"}}</span>
+          <select name="security.saveAbility">
+            {{#each security.saves}}
+            <option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.SaveDc"}}</span>
+          <input type="number" name="security.saveDc" value="{{security.saveDc}}" min="0" step="1">
+        </label>
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.DamageFormula"}}</span>
+          <input type="text" name="security.damageFormula" value="{{security.damageFormula}}">
+        </label>
+        <label class="field">
+          <span>{{localize "TREASURE_CHEST.Security.DamageType"}}</span>
+          <select name="security.damageType">
+            {{#each security.damageTypes}}
+            <option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </label>
+      </div>
+      <label class="field">
+        <span>{{localize "TREASURE_CHEST.Security.Rider"}}</span>
+        <input type="text" name="security.rider" value="{{security.rider}}">
+      </label>
+      {{/if}}
+      {{/if}}
+
+      {{#if security.showRequests}}
+      <div class="action-row">
+        {{#if security.showExamine}}
+        <button type="button" data-action="examine">{{localize "TREASURE_CHEST.Security.Examine"}}</button>
+        {{/if}}
+        {{#if security.showUnderstand}}
+        <button type="button" data-action="understand">{{security.understandLabel}}</button>
+        {{/if}}
+        {{#if security.showDisarm}}
+        <button type="button" data-action="disarm">{{localize "TREASURE_CHEST.Security.Disarm"}}</button>
+        {{/if}}
+        {{#if security.showUnlock}}
+        <button type="button" data-action="unlock" {{#if security.unlockBlocked}}disabled{{/if}}>{{localize "TREASURE_CHEST.Security.Unlock"}}</button>
+        <button type="button" data-action="force" {{#if security.unlockBlocked}}disabled{{/if}}>{{localize "TREASURE_CHEST.Security.Force"}}</button>
+        {{/if}}
+      </div>
+      <p class="hint">{{localize "TREASURE_CHEST.Security.RequestHint"}}</p>
+      {{/if}}
+    </section>
+    {{/if}}
+
+    {{!-- ───────── Coins ───────── --}}
+    <section class="coins">
+      {{#each denominations}}
+      <label class="denom {{#unless value}}is-empty{{/unless}}">
+        <span class="denom-head">
+          {{#if icon}}<img src="{{icon}}" alt="">{{/if}}
+          <span class="denom-label">{{label}}</span>
+        </span>
+        <input type="number" name="currency.{{key}}" value="{{value}}" min="0" step="1" {{#unless ../editable}}disabled{{/unless}}>
+        <button type="button" data-action="takeDenom" data-denom="{{key}}" title="{{takeLabel}}" {{#unless ../canTake}}disabled{{/unless}}>
+          <i class="fa-solid fa-hand"></i>
+        </button>
+      </label>
+      {{/each}}
+    </section>
+
+    {{!-- ───────── Contents (this whole block is the drop target) ───────── --}}
+    <div class="chest-drop-zone">
+      {{#unless totals.count}}
+      <div class="empty-state">
+        <i class="fa-solid fa-box-open"></i>
+        <p>{{localize "TREASURE_CHEST.Sheet.EmptySection"}}</p>
+        {{#if editable}}<p class="empty-hint">{{localize "TREASURE_CHEST.Sheet.DropHint"}}</p>{{/if}}
+      </div>
+      {{else}}
+      {{#each sections}}
+      {{#if items.length}}
+      <section class="chest-section" data-category="{{id}}">
+        <header class="inv-header">
+          <h3 class="inv-title"><span>{{label}}</span><span class="count">{{count}}</span></h3>
+          <span class="col col-qty">{{../columns.quantity}}</span>
+          <span class="col col-weight">{{../columns.weight}}</span>
+          <span class="col col-price">{{../columns.price}}</span>
+          <span class="col col-actions"></span>
+        </header>
+        <ol class="item-list">
+          {{#each items}}
+          <li class="item-row" data-entry-id="{{id}}" data-rarity="{{data.system.rarity}}" {{#if ../../canTake}}draggable="true" title="{{localize "TREASURE_CHEST.Sheet.DragRow"}}"{{/if}}>
+            <span class="item-main" data-action="showItem" role="button" tabindex="0">
+              {{#if img}}<img src="{{img}}" alt="" draggable="false">{{/if}}
+              <span class="item-name" {{#if rarity}}title="{{rarity}}"{{/if}}>{{name}}</span>
+            </span>
+            <span class="col col-qty">{{quantity}}</span>
+            <span class="col col-weight">{{#if weight}}{{weight}}{{else}}&ndash;{{/if}}</span>
+            <span class="col col-price">{{#if price}}{{price}}{{else}}&ndash;{{/if}}</span>
+            <span class="item-actions">
+              <button type="button" class="icon-btn" data-action="takeItem" title="{{localize "TREASURE_CHEST.Actions.Take"}}" {{#unless ../../canTake}}disabled{{/unless}}>
+                <i class="fa-solid fa-hand"></i>
+              </button>
+              {{#if ../../editable}}
+              <button type="button" class="icon-btn" data-action="removeItem" title="{{localize "TREASURE_CHEST.Actions.Remove"}}">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+              {{/if}}
+            </span>
+          </li>
+          {{/each}}
+        </ol>
+      </section>
+      {{/if}}
+      {{/each}}
+
+      <div class="zone-hints">
+        {{#if canTake}}<p class="empty-hint">{{localize "TREASURE_CHEST.Sheet.DragHint"}}</p>{{/if}}
+        {{#if editable}}<p class="empty-hint">{{localize "TREASURE_CHEST.Sheet.DropHint"}}</p>{{/if}}
+      </div>
+      {{/unless}}
+    </div>
+  </div>
+
+  {{!-- ───────── Footer: always visible, even when the item list scrolls ───────── --}}
+  <footer class="sheet-footer">
+    {{#if editable}}
+    <button type="button" class="add-item" data-action="browse">
+      <i class="fa-solid fa-plus"></i> {{localize "TREASURE_CHEST.Actions.Browse"}}
+    </button>
+    {{/if}}
+    <button type="button" data-action="takeCoins" {{#unless canTake}}disabled{{/unless}}>
+      <i class="fa-solid fa-coins"></i> {{localize "TREASURE_CHEST.Actions.TakeCoins"}}
+    </button>
+    <button type="button" data-action="takeAll" {{#unless canTake}}disabled{{/unless}}>
+      <i class="fa-solid fa-hand"></i> {{localize "TREASURE_CHEST.Actions.TakeAll"}}
+    </button>
+  </footer>
+</div>

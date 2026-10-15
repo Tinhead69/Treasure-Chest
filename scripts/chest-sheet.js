@@ -58,7 +58,6 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       takeCoins: ChestSheet.#onTakeCoins,
       takeAll: ChestSheet.#onTakeAll,
       removeItem: ChestSheet.#onRemoveItem,
-      showItem: ChestSheet.#onShowItem,
       examine: ChestSheet.#onExamine,
       understand: ChestSheet.#onUnderstand,
       disarm: ChestSheet.#onDisarm,
@@ -177,44 +176,18 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   }
 
   /** @override */
- async _onRender(context, options) {
-  super._onRender?.(context, options);
-
-  // Existing bindings
-  this.#bindDropZone();
-  this.#bindRowDrag();
-  this.#bindItemKeys();
-
-  // Prevent players from bypassing trap popup
-  if (!game.user.isGM && !this._prompted) {
-    this._prompted = true;
-
-    const choice = await promptChestOpen(this.document);
-    if (choice === "check") {
-      await requestCheck(this.document, "examine");
-      return;
+  _onRender(context, options) {
+    super._onRender?.(context, options);
+    this.#bindDropZone();
+    this.#bindRowDrag();
+    const nameInput = this.element.querySelector("input.document-name");
+    if (nameInput && nameInput !== document.activeElement) nameInput.value = this.document.name ?? "";
+    const portrait = chestPortrait(this.document);
+    const image = this.element.querySelector(".profile-img");
+    if (image) image.src = portrait;
+    if (this.isEditable && needsDefaultPortrait(this.document)) {
+      void this.document.update({ img: portrait });
     }
-    if (choice === "open") {
-      await requestCheck(this.document, "unlock");
-      return;
-    }
-    if (choice === "cancel") {
-      this.close();
-      return;
-    }
-  }
-
-  // Existing portrait update logic
-  const nameInput = this.element.querySelector("input.document-name");
-  if (nameInput && nameInput !== document.activeElement) nameInput.value = this.document.name ?? "";
-  const portrait = chestPortrait(this.document);
-  const image = this.element.querySelector(".profile-img");
-  if (image) image.src = portrait;
-  if (this.isEditable && needsDefaultPortrait(this.document)) {
-    void this.document.update({ img: portrait });
-  }
-}
-
   }
 
   #bindDropZone() {
@@ -389,27 +362,6 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     return false;
   }
 
-  /** Enter or Space on a focused item name does the same as a click. */
-  #bindItemKeys() {
-    for (const element of this.element.querySelectorAll("[data-action='showItem']")) {
-      if (element.dataset.keyBound === "1") continue;
-      element.dataset.keyBound = "1";
-      element.addEventListener("keydown", (event) => {
-        if (event.key !== "Enter" && event.key !== " ") return;
-        event.preventDefault();
-        element.click();
-      });
-    }
-  }
-
-  static async #onShowItem(event, target) {
-    const sheet = /** @type {ChestSheet} */ (this);
-    const entryId = target.closest("[data-entry-id]")?.dataset?.entryId;
-    if (!entryId) return;
-    const entry = getContents(sheet.document).find((row) => row.id === entryId);
-    if (entry) await showItemDetails(entry);
-  }
-
   static async #onRemoveItem(event, target) {
     const sheet = /** @type {ChestSheet} */ (this);
     if (!sheet.isEditable) return;
@@ -471,69 +423,4 @@ function priceText(entry) {
   const value = Number(price?.value);
   if (!Number.isFinite(value) || value <= 0) return "";
   return `${value} ${price.denomination ?? "gp"}`;
-}
-
-/**
- * @param {unknown} value
- * @returns {string}
- */
-function escapeHtml(value) {
-  return foundry.utils.escapeHTML(String(value ?? ""));
-}
-
-/**
- * Open a read-only window describing one chest entry. The entry is a stored
- * snapshot, not a real Item, so this reads the snapshot directly.
- * @param {object} entry
- * @returns {Promise<void>}
- */
-async function showItemDetails(entry) {
-  const id = `treasure-chest-details-${entry.id}`;
-  const open = foundry.applications.instances.get(id);
-  if (open) {
-    open.bringToFront?.();
-    return;
-  }
-
-  const data = entry.data ?? {};
-  const system = data.system ?? {};
-  const type = String(data.type ?? "loot");
-  const meta = [localizeOr(`TYPES.Item.${type}`, type), rarityText(entry)].filter(Boolean).join(", ");
-  const facts = [
-    [localizeOr("DND5E.Quantity", "Quantity"), String(entry.quantity ?? 1)],
-    [localizeOr("DND5E.Weight", "Weight"), weightText(entry)],
-    [localizeOr("DND5E.Price", "Price"), priceText(entry)]
-  ].filter(([, value]) => value);
-
-  // Players do not see GM secrets in the description.
-  const TextEditor = foundry.applications.ux.TextEditor.implementation ?? foundry.applications.ux.TextEditor;
-  const description = await TextEditor.enrichHTML(String(system.description?.value ?? ""), {
-    secrets: game.user.isGM
-  });
-
-  const content = `
-    <div class="item-details">
-      <header class="item-details-header" data-rarity="${escapeHtml(system.rarity)}">
-        <img src="${escapeHtml(entry.img)}" alt="">
-        <div class="item-details-title">
-          <h2>${escapeHtml(entry.name)}</h2>
-          ${meta ? `<p>${escapeHtml(meta)}</p>` : ""}
-        </div>
-      </header>
-      ${facts.length ? `<ul class="item-details-facts">${facts
-    .map(([label, value]) => `<li><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></li>`)
-    .join("")}</ul>` : ""}
-      <div class="item-details-description">${description}</div>
-    </div>`;
-
-  const dialog = new foundry.applications.api.DialogV2({
-    id,
-    classes: ["treasure-chest", "treasure-chest-details"],
-    window: { title: entry.name, resizable: true },
-    position: { width: 460 },
-    modal: false,
-    content,
-    buttons: [{ action: "close", label: game.i18n.localize("Close"), default: true }]
-  });
-  await dialog.render({ force: true });
 }
