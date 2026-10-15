@@ -226,26 +226,63 @@ function tileContains(tile, x, y) {
 }
 
 /**
+ * @param {PIXI.Container|object} token
+ * @param {number} x
+ * @param {number} y
+ * @returns {boolean}
+ */
+function tokenContains(token, x, y) {
+  if (typeof token.bounds?.contains === "function") return token.bounds.contains(x, y);
+  const size = canvas.scene?.grid?.size || 100;
+  const document = token.document;
+  return x >= document.x && y >= document.y
+    && x <= document.x + (document.width || 1) * size
+    && y <= document.y + (document.height || 1) * size;
+}
+
+/**
+ * Chest tokens under a point, topmost last.
+ * Foundry only passes a double-click to a token when the person may view its
+ * actor. Nobody but the GM can view a chest's marker actor, so a player's
+ * double-click never reaches the token. It is picked up here instead.
+ * @param {{ x: number, y: number }} coords
+ * @returns {object[]}
+ */
+function chestTokensAt(coords) {
+  return (canvas.tokens?.placeables ?? [])
+    .filter((token) => token.document.getFlag(MODULE_ID, "chestUuid")
+      && token.visible
+      && tokenContains(token, coords.x, coords.y))
+    .sort((a, b) => (a.document.sort ?? 0) - (b.document.sort ?? 0));
+}
+
+/**
  * @param {MouseEvent} event
  */
 function onCanvasDblClick(event) {
-  if (!canvas?.tiles || !canvas.scene) return;
+  if (!canvas?.scene) return;
   const view = canvas.app?.canvas ?? canvas.app?.view;
   if (view && event.target !== view && !view.contains?.(event.target)) return;
 
   const coords = clientToCanvas(event);
   if (!coords) return;
 
-  const hits = canvas.tiles.placeables.filter((tile) => {
+  // Older chests placed as tiles
+  const tileHits = (canvas.tiles?.placeables ?? []).filter((tile) => {
     const uuid = tile.document.getFlag(MODULE_ID, "chestUuid");
     if (!uuid) return false;
     if (tile.document.hidden && !game.user.isGM) return false;
     return tileContains(tile, coords.x, coords.y);
   });
-  if (!hits.length) return;
+  tileHits.sort((a, b) => (a.document.sort ?? 0) - (b.document.sort ?? 0));
 
-  hits.sort((a, b) => (a.document.sort ?? 0) - (b.document.sort ?? 0));
-  const uuid = hits.at(-1).document.getFlag(MODULE_ID, "chestUuid");
+  let uuid = tileHits.at(-1)?.document.getFlag(MODULE_ID, "chestUuid") ?? null;
+  // The GM's double-click on a token is already handled by patchTokenDoubleClick.
+  if (!uuid && !game.user.isGM) {
+    uuid = chestTokensAt(coords).at(-1)?.document.getFlag(MODULE_ID, "chestUuid") ?? null;
+  }
+  if (!uuid) return;
+
   event.preventDefault();
   event.stopPropagation();
   openPlacedChest(uuid);
