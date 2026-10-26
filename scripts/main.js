@@ -1,6 +1,6 @@
 import { EMPTY_CURRENCY, MODULE_ID, chestArtwork, defaultSecurity, isChest, isChestEmpty } from "./data.js";
 import { ChestSheet } from "./chest-sheet.js";
-import { registerLootDrop } from "./loot.js";
+import { handleLootSocket, registerLootDrop } from "./loot.js";
 import { registerSceneHooks } from "./scene.js";
 import { handleSecuritySocket, registerCheckRequests } from "./security.js";
 
@@ -38,6 +38,7 @@ Hooks.once("ready", () => {
  * @param {{ action?: string, uuid?: string }} message
  */
 async function onSocketMessage(message) {
+  if (handleLootSocket(message)) return;
   if (handleSecuritySocket(message)) return;
   if (!game.user.isGM || message?.action !== "deleteIfEmpty" || !message.uuid) return;
   if (!game.settings.get(MODULE_ID, "deleteWhenEmpty")) return;

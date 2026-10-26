@@ -7,11 +7,79 @@ import {
   getCurrency,
   hasCoins,
   isChest,
+  isChestHidden,
   isChestEmpty,
   sealReason,
   setContents,
   setCurrency
 } from "./data.js";
+
+const pendingLoot = new Map();
+let lootQueue = Promise.resolve();
+
+/** Observer players ask the active GM to perform the complete transfer. */
+function requestLoot(chest, operation, actor, placeId, extra = {}) {
+  if (!game.users.activeGM) {
+    ui.notifications.warn(game.i18n.localize("TREASURE_CHEST.Notifications.NoGamemaster"));
+    return Promise.resolve(false);
+  }
+  const requestId = foundry.utils.randomID();
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      pendingLoot.delete(requestId);
+      ui.notifications.warn(game.i18n.localize("TREASURE_CHEST.Notifications.LootTimeout"));
+      resolve(false);
+    }, 15000);
+    pendingLoot.set(requestId, { resolve, timeout });
+    game.socket.emit(`module.${MODULE_ID}`, {
+      action: "lootRequest", requestId, userId: game.user.id,
+      chestUuid: chest.uuid, actorUuid: actor?.uuid, placeId, operation, ...extra,
+      sceneId: canvas?.scene?.id
+    });
+  });
+}
+
+/** Handle replies locally and serialize player transfers on one GM. */
+export function handleLootSocket(message) {
+  if (message?.action === "lootResult") {
+    if (message.userId !== game.user.id) return true;
+    const pending = pendingLoot.get(message.requestId);
+    if (!pending) return true;
+    clearTimeout(pending.timeout);
+    pendingLoot.delete(message.requestId);
+    ui.notifications[message.success ? "info" : "warn"](game.i18n.localize(message.success
+      ? "TREASURE_CHEST.Notifications.LootReceived"
+      : "TREASURE_CHEST.Notifications.LootRejected"));
+    pending.resolve(message.success === true);
+    return true;
+  }
+  if (message?.action !== "lootRequest") return false;
+  if (!game.user.isGM || !game.users.activeGM?.isSelf) return true;
+  lootQueue = lootQueue.then(async () => {
+    let success = false;
+    try {
+      const user = game.users.get(message.userId);
+      const chest = await foundry.utils.fromUuid(message.chestUuid);
+      const actor = await foundry.utils.fromUuid(message.actorUuid);
+      const levels = foundry.CONST.DOCUMENT_OWNERSHIP_LEVELS;
+      if (user?.active && isChest(chest) && !isChestHidden(chest)
+        && chest.testUserPermission(user, levels.OBSERVER)
+        && actor?.documentName === "Actor" && actor.testUserPermission(user, levels.OWNER)
+        && !isSceneInCombat(game.scenes.get(message.sceneId))) {
+        if (message.operation === "item") success = await takeItem(chest, message.entryId, actor, message.placeId);
+        else if (message.operation === "currency" && (message.denom == null || DENOMINATIONS.includes(message.denom))) {
+          success = await takeCurrency(chest, actor, message.placeId, message.denom);
+        } else if (message.operation === "all") success = await takeAll(chest, actor, message.placeId);
+      }
+    } catch (error) {
+      console.error("Treasure Chest | Player loot transfer failed", error);
+    }
+    game.socket.emit(`module.${MODULE_ID}`, {
+      action: "lootResult", userId: message.userId, requestId: message.requestId, success
+    });
+  }).catch((error) => console.error("Treasure Chest | Loot request failed", error));
+  return true;
+}
 
 /**
  * @param {Scene|null|undefined} scene
@@ -32,7 +100,8 @@ export function isLootBlocked(chest) {
   if (isSceneInCombat(canvas?.scene)) return true;
   if (!chest) return false;
   for (const scene of game.scenes ?? []) {
-    const placed = scene.tiles?.some((tile) => tile.getFlag(MODULE_ID, "chestUuid") === chest.uuid);
+    const placed = scene.tiles?.some((tile) => tile.getFlag(MODULE_ID, "chestUuid") === chest.uuid)
+      || scene.tokens?.some((token) => token.getFlag(MODULE_ID, "chestUuid") === chest.uuid);
     if (placed && isSceneInCombat(scene)) return true;
   }
   return false;
@@ -411,7 +480,7 @@ function resolvePlace(actor, placeId) {
     return { actor, containerId: null, label: actor.name };
   }
   const container = actor.items.get(placeId);
-  if (!container) return null;
+  if (!container || !["container", "backpack"].includes(container.type)) return null;
   return { actor, containerId: container.id, label: `${container.name} (${actor.name})` };
 }
 
@@ -518,6 +587,7 @@ function refuseSealed(chest) {
  */
 export async function takeItem(chest, entryId, actor, placeId, { settle = true } = {}) {
   if (refuseCombat(chest) || refuseSealed(chest)) return false;
+  if (!game.user.isGM) return requestLoot(chest, "item", actor, placeId, { entryId });
   const place = resolvePlace(actor, placeId);
   if (!place) {
     ui.notifications.warn(game.i18n.localize("TREASURE_CHEST.Notifications.NoDestination"));
@@ -560,6 +630,7 @@ export async function takeItem(chest, entryId, actor, placeId, { settle = true }
  */
 export async function takeCurrency(chest, actor, placeId, denom = null, { settle = true } = {}) {
   if (refuseCombat(chest) || refuseSealed(chest)) return false;
+  if (!game.user.isGM) return requestLoot(chest, "currency", actor, placeId, { denom });
   const place = resolvePlace(actor, placeId);
   if (!place) {
     ui.notifications.warn(game.i18n.localize("TREASURE_CHEST.Notifications.NoDestination"));
@@ -594,6 +665,7 @@ export async function takeCurrency(chest, actor, placeId, denom = null, { settle
  */
 export async function takeAll(chest, actor, placeId) {
   if (refuseCombat(chest) || refuseSealed(chest)) return false;
+  if (!game.user.isGM) return requestLoot(chest, "all", actor, placeId);
   const contents = getContents(chest);
   const currency = getCurrency(chest);
   if (!contents.length && !hasCoins(currency)) {

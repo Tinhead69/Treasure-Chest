@@ -173,6 +173,9 @@
       "LoadingDismiss": "OK"
     },
     "Notifications": {
+      "LootReceived": "Loot transferred to the selected inventory.",
+      "LootRejected": "The loot could not be transferred. Check the chest, destination permissions, and combat state.",
+      "LootTimeout": "The GM did not confirm the transfer. Check the inventory before trying again.",
       "Added": "{name} added to the chest.",
       "AddedMany": "{count} items added to the chest.",
       "Removed": "{name} removed from the chest.",

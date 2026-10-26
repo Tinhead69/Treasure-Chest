@@ -105,6 +105,21 @@ export class ChestSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     return this.document.name;
   }
 
+  /** Keep player interactions available on an otherwise read-only item sheet. */
+  _toggleDisabled(disabled) {
+    super._toggleDisabled(disabled);
+    if (this.isEditable || !this.isVisible) return;
+    const canTake = !isLootBlocked(this.document) && !sealReason(this.document);
+    const security = getSecurity(this.document);
+    const unlockBlocked = security.trapped && !security.disarmed && !security.triggered && security.detected;
+    for (const button of this.element.querySelectorAll("button[data-action]")) {
+      const action = button.dataset.action;
+      if (["takeItem", "takeDenom", "takeCoins", "takeAll"].includes(action)) button.disabled = !canTake;
+      else if (["examine", "understand", "disarm"].includes(action)) button.disabled = false;
+      else if (["unlock", "force"].includes(action)) button.disabled = Boolean(unlockBlocked);
+    }
+  }
+
   /** @override */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
